@@ -39,6 +39,8 @@ async function main() {
 
   // Create all 20 lessons in order
   for (const l of PYTHON_101_LESSONS) {
+    // Note: `isAvailable` is computed by the API layer based on progress,
+    // not stored on Lesson — so we don't pass it to create().
     await prisma.lesson.create({
       data: {
         courseId: course.id,
@@ -52,7 +54,6 @@ async function main() {
         solution: l.solution,
         tests: JSON.stringify(l.tests),
         hints: JSON.stringify(l.hints),
-        isAvailable: l.isAvailable,
       },
     });
     console.log(`  ✓ Lesson ${l.order}: ${l.title}`);
