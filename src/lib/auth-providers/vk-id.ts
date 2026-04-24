@@ -52,10 +52,12 @@ export default function VKID<P extends VKIDProfile>(
     id: "vk",
     name: "VK",
     type: "oauth",
-    // Disable auto-PKCE; we handle it manually because VK ID requires
-    // device_id to be passed to the token endpoint and NextAuth's built-in
-    // PKCE handler doesn't know about that custom param.
-    checks: ["state"],
+    // VK mangles the `state` query parameter on return (strips dots from
+    // the JWE payload), which breaks NextAuth's state check. We disable
+    // all NextAuth-side checks and rely on:
+    //   - PKCE (code_challenge / code_verifier) handled manually below
+    //   - VK's own CSRF protection via code_challenge binding
+    checks: ["none"],
 
     authorization: {
       url: "https://id.vk.com/authorize",
