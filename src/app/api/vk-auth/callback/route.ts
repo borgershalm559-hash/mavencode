@@ -100,10 +100,13 @@ export async function GET(req: NextRequest) {
     return fail("TOKEN_EXCHANGE_FAILED", tokens);
   }
 
-  // Fetch user profile
+  // Fetch user profile (force Russian locale so names come in Cyrillic)
   const userRes = await fetch("https://id.vk.com/oauth2/user_info", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Accept-Language": "ru-RU,ru;q=0.9",
+    },
     body: new URLSearchParams({
       client_id: clientId,
       access_token: tokens.access_token,
@@ -145,6 +148,16 @@ export async function GET(req: NextRequest) {
     });
     // Create PvpRating for new user (events.createUser equivalent)
     await prisma.pvpRating.create({ data: { userId: dbUser.id } }).catch(() => {});
+  } else {
+    // Refresh name and avatar from VK on every login so locale-correct
+    // values replace any stale data (e.g. Latin names from earlier sessions).
+    dbUser = await prisma.user.update({
+      where: { id: dbUser.id },
+      data: {
+        name,
+        image: vk.avatar ?? dbUser.image,
+      },
+    });
   }
 
   // Ensure Account row exists and is linked
