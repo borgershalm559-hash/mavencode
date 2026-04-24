@@ -241,7 +241,7 @@ export default function LessonPage({
   const isQuiz = data.lesson.type === "quiz";
 
   return (
-    <div className="h-screen flex flex-col bg-canvas overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-canvas overflow-hidden">
       <LessonHeader
         courseId={data.course.id}
         courseTitle={data.course.title}
