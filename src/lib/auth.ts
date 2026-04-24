@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Yandex from "next-auth/providers/yandex";
-import VK from "next-auth/providers/vk";
+import VKID from "./auth-providers/vk-id";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -51,14 +51,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         })]
       : []),
     ...(process.env.VK_CLIENT_ID
-      ? [VK({
+      ? [VKID({
           clientId: process.env.VK_CLIENT_ID,
           clientSecret: process.env.VK_CLIENT_SECRET!,
           allowDangerousEmailAccountLinking: true,
-          // VK legacy OAuth (oauth.vk.com) does NOT support PKCE.
-          // Disable the auto-added code_challenge so VK doesn't reject with
-          // "invalid_request: Code challenge method is unsupported"
-          checks: ["state"],
         })]
       : []),
     Credentials({
