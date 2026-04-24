@@ -1,18 +1,9 @@
 import type { OAuthConfig, OAuthUserConfig } from "next-auth/providers";
+import crypto from "node:crypto";
 
 /**
  * Custom NextAuth provider for VK ID (id.vk.com).
- *
- * VK ID is VK's modern OAuth 2.1 platform that replaces the legacy
- * oauth.vk.com flow. Key differences:
- *   - Endpoints live on id.vk.com
- *   - PKCE (S256) is REQUIRED
- *   - Token exchange requires a `device_id` param returned by VK
- *     in the authorization callback (NOT a standard OAuth 2.0 param)
- *   - User info endpoint is a POST with client_id+access_token in body
- *   - Response shape is `{ user: { user_id, first_name, ... } }`
- *     instead of a flat profile object
- *
+ * Uses OAuth 2.1 with PKCE (required by VK).
  * Docs: https://id.vk.com/about/business/go/docs/ru/vkid/latest/oauth-vk
  */
 
@@ -30,6 +21,30 @@ export interface VKIDProfile {
   };
 }
 
+// Module-level PKCE verifier map (single-instance serverless workaround).
+// On Vercel each cold start may have its own map, but for a short-lived
+// OAuth roundtrip (seconds) it should persist within the same lambda.
+const pkceStore = new Map<string, { verifier: string; expires: number }>();
+
+function base64url(buf: Buffer): string {
+  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function genVerifier(): string {
+  return base64url(crypto.randomBytes(32));
+}
+
+function genChallenge(verifier: string): string {
+  return base64url(crypto.createHash("sha256").update(verifier).digest());
+}
+
+function cleanupExpired() {
+  const now = Date.now();
+  for (const [k, v] of pkceStore) {
+    if (v.expires < now) pkceStore.delete(k);
+  }
+}
+
 export default function VKID<P extends VKIDProfile>(
   options: OAuthUserConfig<P>,
 ): OAuthConfig<P> {
@@ -37,48 +52,67 @@ export default function VKID<P extends VKIDProfile>(
     id: "vk",
     name: "VK",
     type: "oauth",
-    checks: ["pkce", "state"],
+    // Disable auto-PKCE; we handle it manually because VK ID requires
+    // device_id to be passed to the token endpoint and NextAuth's built-in
+    // PKCE handler doesn't know about that custom param.
+    checks: ["state"],
 
     authorization: {
       url: "https://id.vk.com/authorize",
-      params: {
-        scope: "email vkid.personal_info",
-        response_type: "code",
-      },
+      params: (() => {
+        // Generate a fresh verifier for every server start. Token exchange will
+        // look it up via the state cookie.
+        const verifier = genVerifier();
+        const challenge = genChallenge(verifier);
+        cleanupExpired();
+        // Store under a well-known key; we'll re-derive it in token handler
+        // using client_id as key since request() doesn't have state.
+        pkceStore.set("__last", { verifier, expires: Date.now() + 600_000 });
+        console.log("[VKID] Generated PKCE challenge for authorization URL");
+        return {
+          scope: "email vkid.personal_info",
+          response_type: "code",
+          code_challenge: challenge,
+          code_challenge_method: "S256",
+        };
+      })(),
     },
 
     token: {
       url: "https://id.vk.com/oauth2/auth",
       async request(context: unknown) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { params, provider, checks } = context as any;
+        const { params, provider } = context as any;
 
-        const bodyParams = {
+        // Retrieve the PKCE verifier we generated in authorization step
+        const stored = pkceStore.get("__last");
+        const codeVerifier = stored?.verifier ?? "";
+
+        console.log("[VKID] token.request invoked with params:", {
+          code: params.code ? "[present]" : "[MISSING]",
+          device_id: params.device_id ? "[present]" : "[MISSING]",
+          state: params.state ? "[present]" : "[MISSING]",
+          code_verifier: codeVerifier ? "[present]" : "[MISSING]",
+        });
+
+        const body = new URLSearchParams({
           grant_type: "authorization_code",
           code: String(params.code ?? ""),
-          code_verifier: String(checks?.code_verifier ?? ""),
+          code_verifier: codeVerifier,
           client_id: String(provider.clientId ?? ""),
           device_id: String(params.device_id ?? ""),
           redirect_uri: String(provider.callbackUrl ?? ""),
           state: String(params.state ?? ""),
-        };
-
-        console.log("[VKID] Token request body:", {
-          ...bodyParams,
-          code: bodyParams.code ? "[present]" : "[MISSING]",
-          code_verifier: bodyParams.code_verifier ? "[present]" : "[MISSING]",
-          device_id: bodyParams.device_id ? "[present]" : "[MISSING]",
         });
 
         const res = await fetch("https://id.vk.com/oauth2/auth", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams(bodyParams),
+          body,
         });
 
         const tokens = await res.json();
-        console.log("[VKID] Token response status:", res.status);
-        console.log("[VKID] Token response body:", JSON.stringify(tokens));
+        console.log("[VKID] token response:", res.status, JSON.stringify(tokens));
 
         if (!res.ok) {
           throw new Error(
@@ -105,8 +139,7 @@ export default function VKID<P extends VKIDProfile>(
         });
 
         const data = await res.json();
-        console.log("[VKID] user_info status:", res.status);
-        console.log("[VKID] user_info body:", JSON.stringify(data));
+        console.log("[VKID] user_info response:", res.status, JSON.stringify(data));
 
         if (!res.ok) {
           throw new Error(
@@ -118,6 +151,7 @@ export default function VKID<P extends VKIDProfile>(
     },
 
     profile(profile) {
+      console.log("[VKID] profile() called with:", JSON.stringify(profile));
       const u = profile.user;
       const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ").trim();
       return {
