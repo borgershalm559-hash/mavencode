@@ -628,11 +628,15 @@ user.items()   # dict_items([("name", "Alice"), ...])
   ];
 
   for (const a of achievements) {
-    await prisma.achievement.upsert({
-      where: { title: a.title },
-      update: { description: a.description, icon: a.icon },
-      create: a,
-    });
+    const existing = await prisma.achievement.findFirst({ where: { title: a.title } });
+    if (existing) {
+      await prisma.achievement.update({
+        where: { id: existing.id },
+        data: { description: a.description, icon: a.icon },
+      });
+    } else {
+      await prisma.achievement.create({ data: a });
+    }
   }
 
   console.log(`✓ ${achievements.length} achievements upserted`);
