@@ -10,8 +10,8 @@ interface ActivityHeatmapProps {
 
 const CELL_SIZE = 16;
 const GAP = 4;
-// Show last 6 months (~26 weeks) instead of full year to reduce width.
-const WEEKS = 26;
+// Show last 9 months (~39 weeks) — compact but gives room for seasonality.
+const WEEKS = 39;
 const DAYS = 7;
 const DAY_LABELS = ["Пн", "", "Ср", "", "Пт", "", ""];
 const MONTH_LABELS = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
