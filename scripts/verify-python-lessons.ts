@@ -9,7 +9,14 @@ function runPython(code: string): string {
   const tmp = join(tmpdir(), `py-verify-${Date.now()}-${Math.random().toString(36).slice(2)}.py`);
   writeFileSync(tmp, code);
   try {
-    const out = execFileSync("python", [tmp], { encoding: "utf8", timeout: 5000 });
+    const out = execFileSync("python", [tmp], {
+      encoding: "utf8",
+      timeout: 5000,
+      // Force Python to read source and write stdout as UTF-8 regardless of
+      // OS codepage. Without this, Cyrillic test expectations fail on Windows
+      // because Python defaults to cp1251 stdout.
+      env: { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" },
+    });
     return out.trim();
   } finally {
     unlinkSync(tmp);
