@@ -47,6 +47,12 @@ for (const lesson of PYTHON_101_LESSONS) {
     console.log(`⏸  Lesson ${lesson.order}: PLACEHOLDER (skipped)`);
     continue;
   }
+  // Quiz-type lessons store multiple-choice questions in tests[]; the runner
+  // should not try to execute them as Python.
+  if (lesson.type === "quiz") {
+    console.log(`📝 Lesson ${lesson.order}: ${lesson.title} — quiz (${lesson.tests.length} questions, not executed)`);
+    continue;
+  }
   const result = verifyLesson(lesson);
   if (result.ok) {
     console.log(`✅ Lesson ${lesson.order}: ${lesson.title} — ${lesson.tests.length} tests pass`);

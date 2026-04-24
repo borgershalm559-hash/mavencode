@@ -15,11 +15,12 @@ export function QuizTask({ tests, onResult, isRunning }: QuizTaskProps) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  // Each test.input is the question, test.expected is the correct answer
-  // test.description contains comma-separated options
+  // Each test.input is the question, test.expected is the correct answer,
+  // test.description contains pipe-separated options (options may themselves
+  // contain commas, so we use | as delimiter).
   const questions = tests.map((t) => ({
     question: t.input,
-    options: t.description.split(",").map((o) => o.trim()),
+    options: t.description.split("|").map((o) => o.trim()).filter(Boolean),
     correct: t.expected,
   }));
 
