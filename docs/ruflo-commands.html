@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ruflo — Команды для пользователя</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3354;
+      --accent: #5b8af0;
+      --accent2: #7c3aed;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --cyan: #06b6d4;
+      --pink: #ec4899;
+      --orange: #f97316;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+
+    header {
+      background: linear-gradient(135deg, #1a1d27, #0f1117);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px;
+    }
+    header h1 { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    header p { color: var(--muted); margin-top: 4px; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 16px 40px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .tab {
+      padding: 8px 20px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      transition: all .2s;
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); border-color: var(--accent); }
+
+    .search-wrap { padding: 16px 40px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .search-wrap input {
+      width: 100%; max-width: 560px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 10px 16px; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color .2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+
+    .page { display: none; padding: 32px 40px; }
+    .page.active { display: block; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 40px; }
+    .section-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.1rem; font-weight: 700; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+    .section-title .icon { font-size: 1.2rem; }
+
+    /* ── Command list ── */
+    .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+    .cmd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      align-items: start;
+      transition: border-color .2s;
+    }
+    .cmd:hover { border-color: var(--accent); }
+    .cmd-left { display: flex; flex-direction: column; gap: 4px; }
+    .cmd-name {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.85rem; font-weight: 600;
+      background: var(--surface2);
+      padding: 4px 8px; border-radius: 6px;
+      display: inline-block; width: fit-content;
+    }
+    .cmd-tag {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 4px;
+      font-weight: 500; display: inline-block; width: fit-content;
+    }
+    .cmd-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
+    .cmd-example {
+      margin-top: 6px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.78rem;
+      color: var(--green);
+      background: #0f1a0f;
+      border: 1px solid #1a3a1a;
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    /* ── CLI table ── */
+    .cli-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .cli-table th { text-align: left; padding: 10px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: .05em; }
+    .cli-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .cli-table tr:hover td { background: var(--surface2); }
+    .cli-table code { font-family: 'Cascadia Code', 'Fira Code', monospace; color: var(--cyan); font-size: 0.82rem; }
+    .cli-table .desc { color: var(--muted); }
+    .cli-table .example { color: var(--green); font-size: 0.78rem; margin-top: 4px; font-family: monospace; }
+
+    .note {
+      background: #1a1a0f; border: 1px solid #3a3a1a; border-radius: var(--radius);
+      padding: 14px 18px; margin-bottom: 20px; font-size: 0.88rem; color: #c4b800;
+    }
+    .note strong { color: var(--yellow); }
+
+    .hidden { display: none !important; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 Ruflo — Команды для работы</h1>
+  <p>Команды в чате с Claude и в командной строке (CLI)</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('chat')">💬 Команды в чате</div>
+  <div class="tab" onclick="switchTab('cli')">💻 CLI команды</div>
+</div>
+
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="🔍 Поиск..." oninput="filterAll(this.value)" />
+</div>
+
+<!-- ══════════════ ЧАТ ══════════════ -->
+<div class="page active" id="page-chat">
+
+  <div class="note">
+    <strong>Как использовать:</strong> Напишите команду прямо в чате (например <code>/sc:implement</code>) или просто опишите задачу словами — я выберу нужный инструмент сам.
+  </div>
+
+  <!-- SuperClaude -->
+  <div class="section">
+    <div class="section-title"><span class="icon">⚡</span> SuperClaude — основные команды</div>
+    <div class="cmd-list">
+
+      <div class="cmd" data-search="implement реализация код фича feature">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--accent)">/sc:implement</div>
+          <span class="cmd-tag" style="background:#1a2a4a;color:var(--accent)">Разработка</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Реализовать фичу или написать код. Активирует нужных агентов (coder, tester, reviewer). Самая используемая команда.</div>
+          <div class="cmd-example">Пример: /sc:implement добавь авторизацию через JWT</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="analyze анализ качество код review">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--cyan)">/sc:analyze</div>
+          <span class="cmd-tag" style="background:#0a2a2a;color:var(--cyan)">Анализ</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Комплексный анализ кода: качество, безопасность, производительность, архитектура.</div>
+          <div class="cmd-example">Пример: /sc:analyze проверь весь проект на проблемы</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="test тест тесты покрытие">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--green)">/sc:test</div>
+          <span class="cmd-tag" style="background:#0a2a0a;color:var(--green)">Тесты</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Запустить тесты, посмотреть покрытие, найти непокрытые места. Генерирует отчёт.</div>
+          <div class="cmd-example">Пример: /sc:test запусти тесты и покажи покрытие</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="improve улучшение рефакторинг качество">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--orange)">/sc:improve</div>
+          <span class="cmd-tag" style="background:#2a1a0a;color:var(--orange)">Улучшение</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Улучшить качество кода: рефакторинг, производительность, читаемость.</div>
+          <div class="cmd-example">Пример: /sc:improve оптимизируй этот модуль</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="troubleshoot отладка баг ошибка fix">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--red)">/sc:troubleshoot</div>
+          <span class="cmd-tag" style="background:#2a0a0a;color:var(--red)">Отладка</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Найти и исправить баги, ошибки сборки, проблемы деплоя.</div>
+          <div class="cmd-example">Пример: /sc:troubleshoot почему падает сборка?</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="design дизайн архитектура api">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--pink)">/sc:design</div>
+          <span class="cmd-tag" style="background:#2a0a1a;color:var(--pink)">Архитектура</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Спроектировать архитектуру системы, API, компоненты. Выдаёт детальные спецификации.</div>
+          <div class="cmd-example">Пример: /sc:design спроектируй микросервис для платежей</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="build сборка компиляция пакет">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--yellow)">/sc:build</div>
+          <span class="cmd-tag" style="background:#2a2a0a;color:var(--yellow)">Сборка</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Собрать проект с умной обработкой ошибок.</div>
+          <div class="cmd-example">Пример: /sc:build</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="document документация api docs">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--muted)">/sc:document</div>
+          <span class="cmd-tag" style="background:#1a1a2a;color:#94a3b8">Документация</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Написать документацию для компонента, функции или API.</div>
+          <div class="cmd-example">Пример: /sc:document задокументируй этот модуль</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="git коммит commit pr pull request">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--accent)">/sc:git</div>
+          <span class="cmd-tag" style="background:#1a2a4a;color:var(--accent)">Git</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Git-операции с умными сообщениями коммитов, PR, ветки.</div>
+          <div class="cmd-example">Пример: /sc:git создай коммит с описанием изменений</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="research исследование поиск информация">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--cyan)">/sc:research</div>
+          <span class="cmd-tag" style="background:#0a2a2a;color:var(--cyan)">Исследование</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Глубокое исследование темы через веб-поиск и анализ.</div>
+          <div class="cmd-example">Пример: /sc:research лучшие практики JWT в 2024</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="spawn агенты делегирование задачи">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--pink)">/sc:spawn</div>
+          <span class="cmd-tag" style="background:#2a0a1a;color:var(--pink)">Оркестрация</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Запустить несколько специализированных агентов параллельно для сложной задачи.</div>
+          <div class="cmd-example">Пример: /sc:spawn сделай полный code review проекта</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="task задача workflow план">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--orange)">/sc:task</div>
+          <span class="cmd-tag" style="background:#2a1a0a;color:var(--orange)">Задачи</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Выполнить сложную задачу с управлением воркфлоу и делегированием.</div>
+          <div class="cmd-example">Пример: /sc:task мигрируй базу данных на новую схему</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="help помощь список команды">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--muted)">/sc:help</div>
+          <span class="cmd-tag" style="background:#1a1a2a;color:#94a3b8">Справка</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Показать все доступные /sc команды с описаниями.</div>
+          <div class="cmd-example">Пример: /sc:help</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Ruflo Swarm commands -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🌐</span> Ruflo Swarm — мультиагентные команды в чате</div>
+    <div class="cmd-list">
+
+      <div class="cmd" data-search="swarm рой агенты параллельно">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--accent)">/swarm</div>
+          <span class="cmd-tag" style="background:#1a2a4a;color:var(--accent)">Рой</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Запустить рой агентов на задачу. Агенты работают параллельно и координируют результаты.</div>
+          <div class="cmd-example">Пример: /swarm проведи полный аудит безопасности</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="agent агент запустить конкретный">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--green)">/agent</div>
+          <span class="cmd-tag" style="background:#0a2a0a;color:var(--green)">Агент</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Запустить конкретного агента: coder, tester, security-auditor, reviewer, planner и др.</div>
+          <div class="cmd-example">Пример: /agent security-auditor проверь этот файл</div>
+        </div>
+      </div>
+
+      <div class="cmd" data-search="memory память запомни сохрани">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--pink)">/memory</div>
+          <span class="cmd-tag" style="background:#2a0a1a;color:var(--pink)">Память</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Работа с векторной памятью: сохранить факт, найти по смыслу, показать историю.</div>
+          <div class="cmd-example">Пример: /memory search "паттерны аутентификации"</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Типовые запросы -->
+  <div class="section">
+    <div class="section-title"><span class="icon">💬</span> Можно просто написать словами (без slash-команд)</div>
+    <div class="cmd-list">
+      <div class="cmd" data-search="напиши написать создай создать код">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--muted)">Написать/создать код</div>
+          <span class="cmd-tag" style="background:#1a1a2a;color:#94a3b8">Свободный текст</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Просто опишите задачу — что написать, что исправить, что улучшить. Я сам выберу нужный инструмент.</div>
+          <div class="cmd-example">Пример: «создай REST API для управления пользователями»</div>
+        </div>
+      </div>
+      <div class="cmd" data-search="почему ошибка падает баг">
+        <div class="cmd-left">
+          <div class="cmd-name" style="color:var(--muted)">Отладка и ошибки</div>
+          <span class="cmd-tag" style="background:#1a1a2a;color:#94a3b8">Свободный текст</span>
+        </div>
+        <div>
+          <div class="cmd-desc">Спросите про ошибку или вставьте стек-трейс — я найду причину и исправлю.</div>
+          <div class="cmd-example">Пример: «почему у меня CORS ошибка при запросе к API?»</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════ CLI ══════════════ -->
+<div class="page" id="page-cli">
+
+  <div class="note">
+    <strong>Использование:</strong> <code>npx ruflo@latest &lt;команда&gt; [подкоманда] [опции]</code><br>
+    Или если установлен глобально: <code>ruflo &lt;команда&gt;</code>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🚀</span> Основные команды</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="init инициализация проект">
+        <td><code>init</code></td>
+        <td><div class="desc">Инициализировать Ruflo в текущем проекте (создаёт .claude/, .mcp.json и т.д.)</div><div class="example">npx ruflo@latest init --wizard</div></td>
+      </tr>
+      <tr data-search="status статус состояние">
+        <td><code>status</code></td>
+        <td><div class="desc">Показать статус всей системы: daemon, агенты, память, MCP</div><div class="example">npx ruflo@latest status</div></td>
+      </tr>
+      <tr data-search="doctor диагностика здоровье проверка">
+        <td><code>doctor</code></td>
+        <td><div class="desc">Проверить здоровье системы и получить список исправлений</div><div class="example">npx ruflo@latest doctor --fix</div></td>
+      </tr>
+      <tr data-search="start запустить старт">
+        <td><code>start</code></td>
+        <td><div class="desc">Запустить оркестрационную систему Ruflo</div><div class="example">npx ruflo@latest start</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🌐</span> Swarm — рой агентов</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="swarm init рой инициализация">
+        <td><code>swarm init</code></td>
+        <td><div class="desc">Создать рой агентов с нужной топологией</div><div class="example">npx ruflo@latest swarm init --topology hierarchical --max-agents 8</div></td>
+      </tr>
+      <tr data-search="swarm status статус рой">
+        <td><code>swarm status</code></td>
+        <td><div class="desc">Статус роя: агенты, задачи, нагрузка</div><div class="example">npx ruflo@latest swarm status</div></td>
+      </tr>
+      <tr data-search="swarm задача запустить">
+        <td><code>swarm &quot;задача&quot;</code></td>
+        <td><div class="desc">Запустить рой на выполнение задачи</div><div class="example">npx ruflo@latest swarm "сделай code review проекта" --agents 5</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🤖</span> Agent — управление агентами</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="agent spawn создать запустить">
+        <td><code>agent spawn</code></td>
+        <td><div class="desc">Запустить агента нужного типа</div><div class="example">npx ruflo@latest agent spawn -t coder --name my-coder</div></td>
+      </tr>
+      <tr data-search="agent list список">
+        <td><code>agent list</code></td>
+        <td><div class="desc">Список активных агентов</div><div class="example">npx ruflo@latest agent list</div></td>
+      </tr>
+      <tr data-search="agent run запустить задачу агент">
+        <td><code>agent run</code></td>
+        <td><div class="desc">Запустить конкретного агента на задачу</div><div class="example">npx ruflo@latest agent run security-auditor</div></td>
+      </tr>
+      <tr data-search="agent status статус">
+        <td><code>agent status</code></td>
+        <td><div class="desc">Статус конкретного агента</div><div class="example">npx ruflo@latest agent status &lt;id&gt;</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">💾</span> Memory — векторная память</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="memory init инициализация база данных">
+        <td><code>memory init</code></td>
+        <td><div class="desc">Инициализировать базу векторной памяти</div><div class="example">npx ruflo@latest memory init</div></td>
+      </tr>
+      <tr data-search="memory store сохранить записать">
+        <td><code>memory store</code></td>
+        <td><div class="desc">Сохранить данные с векторным эмбеддингом</div><div class="example">npx ruflo@latest memory store -k "auth-pattern" --value "JWT с refresh токеном"</div></td>
+      </tr>
+      <tr data-search="memory search найти поиск семантический">
+        <td><code>memory search</code></td>
+        <td><div class="desc">Семантический поиск по сохранённым данным</div><div class="example">npx ruflo@latest memory search -q "паттерны авторизации"</div></td>
+      </tr>
+      <tr data-search="memory stats статистика">
+        <td><code>memory stats</code></td>
+        <td><div class="desc">Статистика: количество записей, векторов, неймспейсы</div><div class="example">npx ruflo@latest memory stats</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🐝</span> Hive-Mind — коллективный разум</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="hive-mind init создать кластер">
+        <td><code>hive-mind init</code></td>
+        <td><div class="desc">Создать Hive-Mind кластер с Byzantine-консенсусом</div><div class="example">npx ruflo@latest hive-mind init --consensus raft</div></td>
+      </tr>
+      <tr data-search="hive-mind spawn добавить агент">
+        <td><code>hive-mind spawn</code></td>
+        <td><div class="desc">Добавить агента в рой</div><div class="example">npx ruflo@latest hive-mind spawn --role worker</div></td>
+      </tr>
+      <tr data-search="hive-mind status статус">
+        <td><code>hive-mind status</code></td>
+        <td><div class="desc">Статус кластера: кворум, лидер, агенты</div><div class="example">npx ruflo@latest hive-mind status</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🛡️</span> Security — безопасность</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="security scan сканирование уязвимости">
+        <td><code>security scan</code></td>
+        <td><div class="desc">Сканировать код на уязвимости, CVE, секреты в коде</div><div class="example">npx ruflo@latest security scan</div></td>
+      </tr>
+      <tr data-search="security audit аудит">
+        <td><code>security audit</code></td>
+        <td><div class="desc">Полный security-аудит проекта</div><div class="example">npx ruflo@latest security audit --full</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">⚡</span> Performance — производительность</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="performance profile профилирование">
+        <td><code>performance profile</code></td>
+        <td><div class="desc">Профилировать приложение: CPU, память, I/O</div><div class="example">npx ruflo@latest performance profile</div></td>
+      </tr>
+      <tr data-search="performance benchmark бенчмарк тест скорость">
+        <td><code>performance benchmark</code></td>
+        <td><div class="desc">Запустить бенчмарк и сравнить с базовой линией</div><div class="example">npx ruflo@latest performance benchmark</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🔄</span> Workflow — автоматизация</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="workflow create создать пайплайн автоматизация">
+        <td><code>workflow create</code></td>
+        <td><div class="desc">Создать автоматический воркфлоу из шагов</div><div class="example">npx ruflo@latest workflow create --name deploy-pipeline</div></td>
+      </tr>
+      <tr data-search="workflow run запустить">
+        <td><code>workflow run</code></td>
+        <td><div class="desc">Запустить воркфлоу по имени</div><div class="example">npx ruflo@latest workflow run deploy-pipeline</div></td>
+      </tr>
+      <tr data-search="workflow list список">
+        <td><code>workflow list</code></td>
+        <td><div class="desc">Список всех воркфлоу</div><div class="example">npx ruflo@latest workflow list</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">⚙️</span> Утилиты</div>
+    <table class="cli-table">
+      <tr><th>Команда</th><th>Описание и пример</th></tr>
+      <tr data-search="daemon start запустить фон воркеры">
+        <td><code>daemon start</code></td>
+        <td><div class="desc">Запустить фоновый daemon (12 воркеров: аудит, оптимизация и т.д.)</div><div class="example">npx ruflo@latest daemon start</div></td>
+      </tr>
+      <tr data-search="daemon stop остановить">
+        <td><code>daemon stop</code></td>
+        <td><div class="desc">Остановить фоновый daemon</div><div class="example">npx ruflo@latest daemon stop</div></td>
+      </tr>
+      <tr data-search="config set настройки параметр">
+        <td><code>config set</code></td>
+        <td><div class="desc">Установить параметр конфигурации</div><div class="example">npx ruflo@latest config set maxAgents 10</div></td>
+      </tr>
+      <tr data-search="autopilot enable автопилот включить">
+        <td><code>autopilot enable</code></td>
+        <td><div class="desc">Включить автопилот — агенты будут работать самостоятельно</div><div class="example">npx ruflo@latest autopilot enable</div></td>
+      </tr>
+      <tr data-search="analyze diff анализ изменений">
+        <td><code>analyze</code></td>
+        <td><div class="desc">Анализ кода: diff, риски, рецензенты</div><div class="example">npx ruflo@latest analyze diff</div></td>
+      </tr>
+      <tr data-search="cleanup очистка удалить артефакты">
+        <td><code>cleanup</code></td>
+        <td><div class="desc">Удалить временные файлы и артефакты Ruflo</div><div class="example">npx ruflo@latest cleanup</div></td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['chat','cli'][i] === name));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+  document.getElementById('search').value = '';
+  filterAll('');
+}
+
+function filterAll(q) {
+  q = q.toLowerCase().trim();
+  const page = document.querySelector('.page.active');
+
+  page.querySelectorAll('.cmd').forEach(el => {
+    el.classList.toggle('hidden', q !== '' && !(el.dataset.search || '').includes(q) && !el.innerText.toLowerCase().includes(q));
+  });
+  page.querySelectorAll('tr[data-search]').forEach(el => {
+    el.classList.toggle('hidden', q !== '' && !(el.dataset.search || '').includes(q) && !el.innerText.toLowerCase().includes(q));
+  });
+  page.querySelectorAll('.section').forEach(sec => {
+    const any = [...sec.querySelectorAll('.cmd, tr[data-search]')].some(e => !e.classList.contains('hidden'));
+    sec.classList.toggle('hidden', q !== '' && !any);
+  });
+}
+</script>
+</body>
+</html>
