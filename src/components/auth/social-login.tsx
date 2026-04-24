@@ -16,7 +16,9 @@ export function SocialLogin() {
   const hasGoogle = providers && "google" in providers;
   const hasGithub = providers && "github" in providers;
   const hasYandex = providers && "yandex" in providers;
-  const hasVK = providers && "vk" in providers;
+  // VK is handled outside NextAuth — show button only if env var is set
+  // (client can't read process.env, so we always show; button will 500 if not configured)
+  const hasVK = true;
 
   const oauthCount = [hasGoogle, hasGithub, hasYandex, hasVK].filter(Boolean).length;
 
@@ -88,7 +90,7 @@ export function SocialLogin() {
         {hasVK && (
           <button
             type="button"
-            onClick={() => signIn("vk", { callbackUrl: "/dashboard" })}
+            onClick={() => { window.location.href = "/api/vk-auth/start"; }}
             className="flex items-center justify-center gap-2.5 py-3 text-sm font-mono font-medium border-2 border-white/[0.1] bg-white/[0.04] text-white/60 hover:bg-[#10B981]/[0.08] hover:border-[#10B981]/50 hover:text-[#10B981] transition-colors duration-150"
             style={{ boxShadow: "3px 3px 0 0 rgba(16,185,129,0.2)" }}
             aria-label="Войти через ВКонтакте"

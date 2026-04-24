@@ -3,7 +3,6 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Yandex from "next-auth/providers/yandex";
-import VKID from "./auth-providers/vk-id";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -28,7 +27,6 @@ function clearServerRL(email: string) { serverRL.delete(email); }
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
-  debug: true,
   trustHost: true,
   pages: {
     signIn: "/",
@@ -51,13 +49,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         })]
       : []),
-    ...(process.env.VK_CLIENT_ID
-      ? [VKID({
-          clientId: process.env.VK_CLIENT_ID,
-          clientSecret: process.env.VK_CLIENT_SECRET!,
-          allowDangerousEmailAccountLinking: true,
-        })]
-      : []),
+    // VK is handled outside NextAuth via /api/vk-auth/* routes
+    // because NextAuth's state check can't handle VK's dot-stripping.
     Credentials({
       credentials: {
         email: {},
