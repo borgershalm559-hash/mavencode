@@ -55,6 +55,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           clientId: process.env.VK_CLIENT_ID,
           clientSecret: process.env.VK_CLIENT_SECRET!,
           allowDangerousEmailAccountLinking: true,
+          // VK legacy OAuth (oauth.vk.com) does NOT support PKCE.
+          // Disable the auto-added code_challenge so VK doesn't reject with
+          // "invalid_request: Code challenge method is unsupported"
+          checks: ["state"],
         })]
       : []),
     Credentials({
