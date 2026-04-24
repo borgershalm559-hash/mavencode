@@ -28,6 +28,8 @@ function clearServerRL(email: string) { serverRL.delete(email); }
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  debug: true, // Temporarily enabled to diagnose production OAuth issues
+  trustHost: true,
   pages: {
     signIn: "/",
   },
