@@ -255,14 +255,14 @@ export default function LessonPage({
       />
 
       {/* Main split view */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
         {/* Left: Theory */}
-        <div className="lg:w-[45%] w-full h-[40vh] lg:h-auto border-b-2 lg:border-b-0 lg:border-r-2 border-white/[0.07] bg-surface">
+        <div className="lg:w-[45%] w-full h-[40vh] lg:h-full min-h-0 border-b-2 lg:border-b-0 lg:border-r-2 border-white/[0.07] bg-surface">
           <TheoryPanel content={data.lesson.content} />
         </div>
 
         {/* Right: Editor + Console */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 lg:h-full">
           {isQuiz ? (
             <QuizTask
               tests={data.lesson.tests}
