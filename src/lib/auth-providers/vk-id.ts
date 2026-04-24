@@ -53,7 +53,7 @@ export default function VKID<P extends VKIDProfile>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { params, provider, checks } = context as any;
 
-        const body = new URLSearchParams({
+        const bodyParams = {
           grant_type: "authorization_code",
           code: String(params.code ?? ""),
           code_verifier: String(checks?.code_verifier ?? ""),
@@ -61,18 +61,28 @@ export default function VKID<P extends VKIDProfile>(
           device_id: String(params.device_id ?? ""),
           redirect_uri: String(provider.callbackUrl ?? ""),
           state: String(params.state ?? ""),
+        };
+
+        console.log("[VKID] Token request body:", {
+          ...bodyParams,
+          code: bodyParams.code ? "[present]" : "[MISSING]",
+          code_verifier: bodyParams.code_verifier ? "[present]" : "[MISSING]",
+          device_id: bodyParams.device_id ? "[present]" : "[MISSING]",
         });
 
         const res = await fetch("https://id.vk.com/oauth2/auth", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body,
+          body: new URLSearchParams(bodyParams),
         });
 
         const tokens = await res.json();
+        console.log("[VKID] Token response status:", res.status);
+        console.log("[VKID] Token response body:", JSON.stringify(tokens));
+
         if (!res.ok) {
           throw new Error(
-            `VK ID token exchange failed: ${JSON.stringify(tokens)}`,
+            `VK ID token exchange failed (${res.status}): ${JSON.stringify(tokens)}`,
           );
         }
         return { tokens };
@@ -85,20 +95,23 @@ export default function VKID<P extends VKIDProfile>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { tokens, provider } = context as any;
 
-        const body = new URLSearchParams({
-          client_id: String(provider.clientId ?? ""),
-          access_token: String(tokens.access_token ?? ""),
-        });
-
         const res = await fetch("https://id.vk.com/oauth2/user_info", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body,
+          body: new URLSearchParams({
+            client_id: String(provider.clientId ?? ""),
+            access_token: String(tokens.access_token ?? ""),
+          }),
         });
 
         const data = await res.json();
+        console.log("[VKID] user_info status:", res.status);
+        console.log("[VKID] user_info body:", JSON.stringify(data));
+
         if (!res.ok) {
-          throw new Error(`VK ID user_info failed: ${JSON.stringify(data)}`);
+          throw new Error(
+            `VK ID user_info failed (${res.status}): ${JSON.stringify(data)}`,
+          );
         }
         return data;
       },
