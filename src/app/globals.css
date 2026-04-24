@@ -159,3 +159,14 @@ textarea:disabled {
   background-color: #10B981;
   color: #000000;
 }
+
+/* Hide scrollbar but keep scroll ability */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}

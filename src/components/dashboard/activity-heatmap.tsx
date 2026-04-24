@@ -98,7 +98,7 @@ export function ActivityHeatmap({ activity, streak }: ActivityHeatmapProps) {
     <div className="space-y-4">
       {/* Heatmap */}
       <div className="relative">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hide-scrollbar">
           <svg
             width={svgWidth}
             height={svgHeight}
