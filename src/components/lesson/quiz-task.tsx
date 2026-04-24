@@ -41,7 +41,10 @@ export function QuizTask({ tests, onResult, isRunning }: QuizTaskProps) {
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 space-y-6 custom-scrollbar">
+    <div
+      className="h-full overflow-y-auto p-6 space-y-6 custom-scrollbar"
+      style={{ overflowAnchor: "none" }}
+    >
       {questions.map((q, i) => (
         <motion.div
           key={i}
@@ -63,7 +66,15 @@ export function QuizTask({ tests, onResult, isRunning }: QuizTaskProps) {
               return (
                 <label
                   key={opt}
-                  className={`flex items-center gap-3 p-2.5 cursor-pointer transition-all border-2 ${
+                  onClick={(e) => {
+                    // Prevent the browser from scroll-to-focusing the sr-only
+                    // radio input, which caused the layout to shift on answer
+                    // click.
+                    if (submitted) return;
+                    e.preventDefault();
+                    setAnswers((a) => ({ ...a, [i]: opt }));
+                  }}
+                  className={`flex items-center gap-3 p-2.5 cursor-pointer transition-colors border-2 ${
                     isCorrect
                       ? "bg-emerald-500/[0.12] border-emerald-400/40"
                       : isWrong
@@ -80,6 +91,7 @@ export function QuizTask({ tests, onResult, isRunning }: QuizTaskProps) {
                     checked={isSelected}
                     onChange={() => !submitted && setAnswers((a) => ({ ...a, [i]: opt }))}
                     disabled={submitted}
+                    tabIndex={-1}
                     className="sr-only"
                   />
                   <div
