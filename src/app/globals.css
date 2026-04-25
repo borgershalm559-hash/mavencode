@@ -263,6 +263,15 @@ pre {
   }
 }
 
+/* Lesson page — html/body must match the dark canvas so any whitespace
+   beyond the 100vh container does not flash light (default browser bg). */
+html:has(.lesson-main-split),
+html:has(.lesson-main-split) body {
+  background: #0B0B0C;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Custom scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
