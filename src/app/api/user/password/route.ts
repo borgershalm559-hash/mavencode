@@ -12,9 +12,15 @@ export async function POST(req: Request) {
     newPassword: string;
   };
 
-  if (!currentPassword || !newPassword || newPassword.length < 8) {
+  if (
+    !currentPassword ||
+    !newPassword ||
+    typeof newPassword !== "string" ||
+    newPassword.length < 12 ||
+    newPassword.length > 200
+  ) {
     return NextResponse.json(
-      { error: "Новый пароль должен содержать минимум 8 символов" },
+      { error: "Новый пароль должен содержать минимум 12 символов" },
       { status: 400 }
     );
   }

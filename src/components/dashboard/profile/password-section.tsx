@@ -16,7 +16,7 @@ interface Req { label: string; met: boolean }
 
 function getRequirements(pw: string): Req[] {
   return [
-    { label: "Минимум 8 символов", met: pw.length >= 8 },
+    { label: "Минимум 12 символов", met: pw.length >= 12 },
     { label: "Цифра (0–9)",        met: /\d/.test(pw) },
     { label: "Заглавная буква",    met: /[A-ZА-Я]/.test(pw) },
     { label: "Спецсимвол (!@#…)",  met: /[^A-Za-zА-Яа-я0-9]/.test(pw) },
@@ -137,7 +137,7 @@ export function PasswordSection() {
                       type={showNew ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Минимум 8 символов"
+                      placeholder="Минимум 12 символов"
                       className={`${inputClass} pr-10`}
                     />
                     <button type="button" tabIndex={-1}

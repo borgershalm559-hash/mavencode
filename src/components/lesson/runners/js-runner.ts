@@ -24,6 +24,8 @@ export class JsRunner implements CodeRunner {
 
       const handler = (event: MessageEvent) => {
         if (event.source !== iframe.contentWindow) return;
+        // Sandboxed iframes (no allow-same-origin) post with origin "null".
+        if (event.origin !== "null" && event.origin !== window.location.origin) return;
         const data = event.data;
         if (data?.type === "result") {
           clearTimeout(timeout);

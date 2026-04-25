@@ -9,7 +9,15 @@ export async function POST(req: Request) {
     const email = body.email?.trim().toLowerCase();
     const password = body.password;
 
-    if (!email || !password || password.length < 8) {
+    if (
+      !email ||
+      typeof email !== "string" ||
+      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ||
+      !password ||
+      typeof password !== "string" ||
+      password.length < 12 ||
+      password.length > 200
+    ) {
       return NextResponse.json(
         { error: "Некорректные данные" },
         { status: 400 }

@@ -28,6 +28,11 @@ export async function POST(
   const { id } = await params;
   const body = await req.json();
 
+  const MAX_XP = 10000;
+  const xpReward = Number.isFinite(Number(body.xpReward))
+    ? Math.max(1, Math.min(MAX_XP, Math.floor(Number(body.xpReward))))
+    : 100;
+
   // Auto-set order to last + 1
   const lastLesson = await prisma.lesson.findFirst({
     where: { courseId: id },
@@ -47,7 +52,7 @@ export async function POST(
       solution: body.solution || null,
       tests: body.tests || null,
       hints: body.hints || null,
-      xpReward: body.xpReward || 100,
+      xpReward,
     },
   });
 

@@ -57,7 +57,16 @@ export async function GET(req: NextRequest) {
   const returnedState = url.searchParams.get("state");
   const oauthError = url.searchParams.get("error");
 
-  if (oauthError) return fail("VK_REJECTED:" + oauthError);
+  if (oauthError) {
+    // Allowlist VK error codes to avoid reflecting attacker-controlled
+    // values into the redirect URL.
+    const KNOWN = new Set([
+      "access_denied", "invalid_request", "invalid_client",
+      "invalid_grant", "unauthorized_client", "unsupported_response_type",
+      "invalid_scope", "server_error", "temporarily_unavailable",
+    ]);
+    return fail(KNOWN.has(oauthError) ? `VK_REJECTED:${oauthError}` : "VK_REJECTED");
+  }
   if (!code || !deviceId) return fail("MISSING_CODE_OR_DEVICE_ID");
 
   // Recover PKCE verifier from cookie
@@ -131,8 +140,19 @@ export async function GET(req: NextRequest) {
   });
 
   if (!dbUser && email) {
-    // Link to existing account with same email (allowDangerousEmailAccountLinking behavior)
-    dbUser = await prisma.user.findUnique({ where: { email } });
+    // Link to existing account ONLY if it has been email-verified by the user.
+    // Without this gate, an attacker could create a VK account claiming a
+    // victim's email and gain access to the victim's MavenCode account.
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      if (existing.emailVerified) {
+        dbUser = existing;
+      } else {
+        // Email exists but isn't verified — refuse linking to prevent
+        // takeover. User must verify the email on the original account first.
+        return fail("EMAIL_UNVERIFIED_LINK_BLOCKED");
+      }
+    }
   }
 
   if (!dbUser) {

@@ -2,36 +2,46 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+const MIN_PASSWORD_LENGTH = 12;
+
 export async function POST(req: Request) {
   try {
-    const { token, email, password } = await req.json();
+    const { token, password } = await req.json();
 
-    if (!token || !email || !password || password.length < 8) {
+    if (!token || typeof token !== "string" || !password || password.length < MIN_PASSWORD_LENGTH) {
       return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Find and validate token
+    // Look up token directly — the token is a 32-byte random hex,
+    // so it's the only credential needed. Do NOT trust client-supplied email.
     const record = await prisma.verificationToken.findFirst({
-      where: { identifier: normalizedEmail, token },
+      where: { token },
     });
 
     if (!record) {
       return NextResponse.json({ error: "Ссылка недействительна или уже использована" }, { status: 400 });
     }
 
+    const normalizedEmail = record.identifier;
+
     if (record.expires < new Date()) {
-      await prisma.verificationToken.delete({ where: { identifier_token: { identifier: normalizedEmail, token } } });
+      await prisma.verificationToken.delete({
+        where: { identifier_token: { identifier: normalizedEmail, token } },
+      });
       return NextResponse.json({ error: "Ссылка истекла. Запросите новую" }, { status: 400 });
     }
 
     const hashed = await bcrypt.hash(password, 12);
 
-    // Update password and delete token atomically
+    // Update password, mark email verified, and delete token atomically
     await prisma.$transaction([
-      prisma.user.update({ where: { email: normalizedEmail }, data: { password: hashed } }),
-      prisma.verificationToken.delete({ where: { identifier_token: { identifier: normalizedEmail, token } } }),
+      prisma.user.update({
+        where: { email: normalizedEmail },
+        data: { password: hashed, emailVerified: new Date() },
+      }),
+      prisma.verificationToken.delete({
+        where: { identifier_token: { identifier: normalizedEmail, token } },
+      }),
     ]);
 
     return NextResponse.json({ ok: true });

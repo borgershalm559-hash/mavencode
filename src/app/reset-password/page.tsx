@@ -14,7 +14,6 @@ function ResetPasswordForm() {
   const params = useSearchParams();
   const router = useRouter();
   const token = params.get("token") ?? "";
-  const email = params.get("email") ?? "";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -25,7 +24,7 @@ function ResetPasswordForm() {
   const [success, setSuccess] = useState(false);
 
   const rules = [
-    { label: "Минимум 8 символов", met: password.length >= 8 },
+    { label: "Минимум 12 символов", met: password.length >= 12 },
     { label: "Цифра (0–9)", met: /\d/.test(password) },
     { label: "Заглавная буква", met: /[A-ZА-Я]/.test(password) },
     { label: "Спецсимвол (!@#…)", met: /[^A-Za-zА-Яа-я0-9]/.test(password) },
@@ -34,8 +33,8 @@ function ResetPasswordForm() {
   const passwordsMatch = password === confirm && confirm.length > 0;
 
   useEffect(() => {
-    if (!token || !email) router.replace("/");
-  }, [token, email, router]);
+    if (!token) router.replace("/");
+  }, [token, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +49,7 @@ function ResetPasswordForm() {
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, email, password }),
+        body: JSON.stringify({ token, password }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Ошибка"); setLoading(false); return; }
@@ -108,7 +107,7 @@ function ResetPasswordForm() {
             &gt;&gt;&gt; Новый пароль
           </h1>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/40 mt-1">
-            {email || "сброс.sh"}
+            сброс.sh
           </p>
         </div>
 
@@ -141,7 +140,7 @@ function ResetPasswordForm() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/40" />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Минимум 8 символов"
+                    placeholder="Минимум 12 символов"
                     className={`${inputClass} pr-10`}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

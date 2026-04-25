@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getAdminUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
+const MAX_XP = 10000;
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string; lessonId: string }> }
@@ -9,8 +11,10 @@ export async function GET(
   const [, error] = await getAdminUserId();
   if (error) return error;
 
-  const { lessonId } = await params;
-  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
+  const { id: courseId, lessonId } = await params;
+  const lesson = await prisma.lesson.findFirst({
+    where: { id: lessonId, courseId },
+  });
   if (!lesson) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(lesson);
 }
@@ -22,8 +26,21 @@ export async function PATCH(
   const [, error] = await getAdminUserId();
   if (error) return error;
 
-  const { lessonId } = await params;
+  const { id: courseId, lessonId } = await params;
   const body = await req.json();
+
+  // Verify lesson belongs to course before updating (prevents cross-course IDOR)
+  const existing = await prisma.lesson.findFirst({
+    where: { id: lessonId, courseId },
+    select: { id: true },
+  });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const xpReward =
+    body.xpReward !== undefined && Number.isFinite(Number(body.xpReward))
+      ? Math.max(1, Math.min(MAX_XP, Math.floor(Number(body.xpReward))))
+      : undefined;
+
   const lesson = await prisma.lesson.update({
     where: { id: lessonId },
     data: {
@@ -36,7 +53,7 @@ export async function PATCH(
       ...(body.solution !== undefined && { solution: body.solution }),
       ...(body.tests !== undefined && { tests: body.tests }),
       ...(body.hints !== undefined && { hints: body.hints }),
-      ...(body.xpReward !== undefined && { xpReward: body.xpReward }),
+      ...(xpReward !== undefined && { xpReward }),
     },
   });
 
@@ -50,7 +67,13 @@ export async function DELETE(
   const [, error] = await getAdminUserId();
   if (error) return error;
 
-  const { lessonId } = await params;
+  const { id: courseId, lessonId } = await params;
+  const existing = await prisma.lesson.findFirst({
+    where: { id: lessonId, courseId },
+    select: { id: true },
+  });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   await prisma.lesson.delete({ where: { id: lessonId } });
   return NextResponse.json({ ok: true });
 }

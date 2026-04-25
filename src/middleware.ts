@@ -1,31 +1,28 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 
-export function middleware(req: NextRequest) {
-  const sessionToken =
-    req.cookies.get("authjs.session-token")?.value ||
-    req.cookies.get("__Secure-authjs.session-token")?.value;
+const PROTECTED_PREFIXES = ["/dashboard", "/lesson", "/admin", "/pvp"];
 
+export default auth((req) => {
   const { pathname } = req.nextUrl;
+  const isAuthed = !!req.auth?.user?.id;
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
 
-  // Authenticated user on auth page → redirect to dashboard
-  if (sessionToken && pathname === "/") {
+  if (isAuthed && pathname === "/") {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  // Unauthenticated user on protected page → redirect to auth
-  if (
-    !sessionToken &&
-    (pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/lesson") ||
-      pathname.startsWith("/admin") ||
-      pathname.startsWith("/pvp"))
-  ) {
+  if (!isAuthed && isProtected) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
+  // Admin pages additionally require role === "admin"
+  if (pathname.startsWith("/admin") && req.auth?.user?.role !== "admin") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/", "/dashboard/:path*", "/lesson/:path*", "/admin/:path*", "/pvp/:path*"],

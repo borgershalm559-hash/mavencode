@@ -116,7 +116,7 @@ export function AuthForm({ activeTab }: AuthFormProps) {
   const validateName = (v: string) => (v.trim().length < 2 ? "Минимум 2 символа" : "");
   const validateEmail = (v: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Некорректный email";
-  const validatePassword = (v: string) => (v.length < 8 ? "Минимум 8 символов" : "");
+  const validatePassword = (v: string) => (v.length < 12 ? "Минимум 12 символов" : "");
   const validateConfirmPassword = (v: string, password: string) =>
     v !== password ? "Пароли не совпадают" : "";
 
@@ -475,7 +475,7 @@ export function AuthForm({ activeTab }: AuthFormProps) {
               <div className="overflow-hidden">
                 <div className="pt-2 pb-0.5 grid grid-cols-2 gap-x-3 gap-y-1.5">
                   {([
-                    { label: "Минимум 8 символов", met: form.values.password.length >= 8 },
+                    { label: "Минимум 12 символов", met: form.values.password.length >= 12 },
                     { label: "Цифра (0–9)", met: /\d/.test(form.values.password) },
                     { label: "Заглавная буква", met: /[A-ZА-Я]/.test(form.values.password) },
                     { label: "Спецсимвол (!@#…)", met: /[^A-Za-zА-Яа-я0-9]/.test(form.values.password) },

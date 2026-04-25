@@ -17,7 +17,9 @@ export async function POST(
   if (error) return error;
 
   const { id } = await params;
-  const { code, hintsUsed = 0 } = await req.json();
+  const body = await req.json();
+  const code = typeof body.code === "string" ? body.code : "";
+  const rawHintsUsed = Number(body.hintsUsed);
 
   const lesson = await prisma.lesson.findUnique({
     where: { id },
@@ -37,8 +39,15 @@ export async function POST(
     return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
   }
 
+  // Cap hintsUsed at the actual number of hints in the lesson, so a client
+  // can't claim more hints than exist (or fewer than zero).
+  const lessonHints = Array.isArray(lesson.hints) ? lesson.hints.length : 0;
+  const hintsUsed = Number.isFinite(rawHintsUsed)
+    ? Math.max(0, Math.min(Math.floor(rawHintsUsed), lessonHints))
+    : 0;
+
   // Calculate XP
-  const multiplier = XP_MULTIPLIERS[Math.min(hintsUsed, 3)];
+  const multiplier = XP_MULTIPLIERS[Math.min(hintsUsed, XP_MULTIPLIERS.length - 1)];
   const xpEarned = Math.round(lesson.xpReward * multiplier);
 
   // Check if already completed (don't award XP twice)

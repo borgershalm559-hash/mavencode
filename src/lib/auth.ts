@@ -6,7 +6,14 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
-/* ── Server-side in-memory rate limiter ── */
+/**
+ * Server-side in-memory rate limiter.
+ *
+ * NOTE: This is best-effort. On serverless/multi-instance deployments
+ * (Vercel) the Map is per-instance, so an attacker hitting different
+ * instances can bypass the limit. A Redis/Postgres-backed limiter is
+ * planned for Wave 2 of the security pass.
+ */
 const serverRL = new Map<string, { count: number; resetAt: number }>();
 function checkServerRL(email: string): boolean {
   const now = Date.now();
@@ -32,13 +39,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   providers: [
     ...(process.env.GITHUB_ID
-      ? [GitHub({ clientId: process.env.GITHUB_ID, clientSecret: process.env.GITHUB_SECRET!, allowDangerousEmailAccountLinking: true })]
+      ? [GitHub({
+          clientId: process.env.GITHUB_ID,
+          clientSecret: process.env.GITHUB_SECRET!,
+          // allowDangerousEmailAccountLinking removed: a credentials user
+          // whose email matches a later GitHub login would otherwise be
+          // silently merged. NextAuth will now require explicit linking.
+        })]
       : []),
     ...(process.env.YANDEX_CLIENT_ID
       ? [Yandex({
           clientId: process.env.YANDEX_CLIENT_ID,
           clientSecret: process.env.YANDEX_CLIENT_SECRET!,
-          allowDangerousEmailAccountLinking: true,
           authorization: {
             url: "https://oauth.yandex.ru/authorize",
             params: { scope: "login:email login:info" },
@@ -79,7 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   events: {
-    // Fires when a NEW user is created via OAuth (GitHub, Google)
+    // Fires when a NEW user is created via OAuth (GitHub, Yandex)
     async createUser({ user }) {
       await prisma.pvpRating.create({
         data: { userId: user.id! },

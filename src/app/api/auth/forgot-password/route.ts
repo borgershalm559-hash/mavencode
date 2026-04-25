@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       data: { identifier: normalizedEmail, token, expires },
     });
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(normalizedEmail)}`;
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
 
     const sendResult = await resend.emails.send({
       from: "MavenCode <onboarding@resend.dev>",

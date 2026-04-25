@@ -17,10 +17,17 @@ export async function PATCH(
   }
 
   const body = await req.json();
+  const ALLOWED_ROLES = ["user", "admin"] as const;
+  type AllowedRole = (typeof ALLOWED_ROLES)[number];
+
+  if (body.role !== undefined && !ALLOWED_ROLES.includes(body.role as AllowedRole)) {
+    return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+  }
+
   const user = await prisma.user.update({
     where: { id },
     data: {
-      ...(body.role !== undefined && { role: body.role }),
+      ...(body.role !== undefined && { role: body.role as AllowedRole }),
     },
     select: { id: true, name: true, email: true, role: true },
   });
