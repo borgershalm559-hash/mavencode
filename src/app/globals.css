@@ -162,9 +162,23 @@ textarea:disabled {
 
 /* Disable resize handles on all native elements (textareas, etc.) */
 textarea,
-pre,
-.monaco-editor textarea {
+pre {
+  resize: none;
+}
+
+/* Force Monaco's internal hidden input/textarea to remain invisible.
+   Without this, Tailwind preflight + global resets can give the textarea
+   a visible background/border, so it appears as a draggable rectangle
+   blocking the editor surface. */
+.monaco-editor textarea.inputarea,
+.monaco-editor .inputarea {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
   resize: none !important;
+  color: transparent !important;
+  caret-color: transparent !important;
 }
 
 /* Custom scrollbar */
