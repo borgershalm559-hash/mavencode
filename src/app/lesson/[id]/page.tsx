@@ -260,8 +260,6 @@ export default function LessonPage({
         courseId={data.course.id}
         courseTitle={data.course.title}
         lessonOrder={data.lesson.order}
-        totalLessons={data.course.totalLessons}
-        language={data.lesson.language}
         hintsUsed={hintsUsed}
         totalHints={data.lesson.hints.length}
         onHintRequest={() => setHintsOpen(true)}
@@ -287,15 +285,15 @@ export default function LessonPage({
         courseTitle={data.course.title}
       />
 
-      {/* Main split */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+      {/* Main split — 50/50 grid per V1 Dossier */}
+      <div className="flex-1 flex flex-col lg:grid min-h-0" style={{ gridTemplateColumns: "1fr 1fr" }}>
         {/* Theory */}
-        <div className="lg:w-[45%] w-full h-[38vh] lg:h-full min-h-0 border-b lg:border-b-0 lg:border-r border-white/[0.06] bg-[#0E0E10]">
+        <div className="w-full h-[38vh] lg:h-full min-h-0 border-b lg:border-b-0 lg:border-r-2 border-white/[0.07] bg-[#0B0B0C]">
           <TheoryPanel content={data.lesson.content} />
         </div>
 
         {/* Editor + Console */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex flex-col min-h-0">
           {isQuiz ? (
             <QuizTask
               tests={data.lesson.tests}
