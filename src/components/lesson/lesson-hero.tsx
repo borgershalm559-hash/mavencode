@@ -1,7 +1,23 @@
 "use client";
 
+const TYPE_META: Record<string, { short: string; hex: string }> = {
+  code:          { short: "CODE", hex: "#60A5FA" },
+  "fill-blanks": { short: "FILL", hex: "#C4B5FD" },
+  "fix-bug":     { short: "BUG",  hex: "#F87171" },
+  quiz:          { short: "QUIZ", hex: "#34D399" },
+};
+
+const LANG_META: Record<string, { label: string; hex: string }> = {
+  python:     { label: "PY", hex: "#60A5FA" },
+  javascript: { label: "JS", hex: "#F6E05E" },
+  typescript: { label: "TS", hex: "#3B82F6" },
+};
+
 interface LessonHeroProps {
   title: string;
+  order: number;
+  type: string;
+  language: string;
   xpReward: number;
   testsCount: number;
   estimatedMinutes: number;
@@ -10,68 +26,126 @@ interface LessonHeroProps {
 
 export function LessonHero({
   title,
+  order,
+  type,
+  language,
   xpReward,
   testsCount,
   estimatedMinutes,
   completed,
 }: LessonHeroProps) {
+  const typeMeta = TYPE_META[type] ?? { short: type.toUpperCase(), hex: "#60A5FA" };
+  const langMeta = LANG_META[language] ?? { label: language.toUpperCase(), hex: "#60A5FA" };
+
   return (
-    <div className="px-6 pt-6 pb-4 border-b border-white/[0.06]">
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
-        {/* Title */}
-        <div className="flex-1 min-w-0">
+    <div
+      className="border-b border-white/[0.07]"
+      style={{
+        padding: "36px 40px",
+        display: "grid",
+        gridTemplateColumns: "1fr 360px",
+        gap: 40,
+        alignItems: "end",
+      }}
+    >
+      {/* Left: overline + title */}
+      <div>
+        <div
+          className="font-mono text-[11px] tracking-[0.3em] uppercase flex items-center gap-3.5"
+          style={{ color: "#10B981" }}
+        >
+          <span>Лабораторная № {String(order).padStart(2, "0")}</span>
+          <span className="text-white/15">·</span>
+          <span style={{ color: typeMeta.hex }}>{typeMeta.short}</span>
+          <span className="text-white/15">·</span>
+          <span style={{ color: langMeta.hex }}>{langMeta.label}</span>
           {completed && (
-            <div className="mb-2 inline-flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-[#10B981]" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#10B981]">
-                Пройден
+            <>
+              <span className="text-white/15">·</span>
+              <span className="text-[#10B981]">ПРОЙДЕН</span>
+            </>
+          )}
+        </div>
+
+        <h1
+          style={{
+            fontFamily: "var(--font-fraunces), Georgia, serif",
+            fontWeight: 300,
+            fontSize: 76,
+            lineHeight: 0.95,
+            letterSpacing: "-0.02em",
+            margin: "16px 0 0",
+            textWrap: "balance",
+            color: "#fff",
+          }}
+        >
+          {title}
+        </h1>
+      </div>
+
+      {/* Right: status block */}
+      <div
+        style={{
+          borderLeft: "1px solid rgba(255,255,255,0.08)",
+          paddingLeft: 28,
+          display: "grid",
+          gap: 22,
+        }}
+      >
+        {[
+          { k: "Время",   v: `${estimatedMinutes}м`, sub: "оценка",   accent: false },
+          { k: "Награда", v: `+${xpReward}`,         sub: "XP",       accent: true  },
+          { k: "Тесты",   v: `0/${testsCount}`,       sub: "пройдено", accent: false },
+        ].map((x) => (
+          <div
+            key={x.k}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "auto 1fr",
+              columnGap: 18,
+              alignItems: "baseline",
+            }}
+          >
+            <div
+              className="font-mono"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.25em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.35)",
+                alignSelf: "start",
+                marginTop: 14,
+              }}
+            >
+              {x.k}
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-fraunces), Georgia, serif",
+                  fontWeight: 300,
+                  fontSize: 44,
+                  lineHeight: 1,
+                  color: x.accent ? "#10B981" : "#fff",
+                }}
+              >
+                {x.v}
+              </span>
+              <span
+                className="font-mono"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.35)",
+                }}
+              >
+                {x.sub}
               </span>
             </div>
-          )}
-          <h1
-            className="text-[clamp(36px,5.5vw,76px)] font-light leading-[1.05] text-white/90"
-            style={{ fontFamily: "var(--font-fraunces)", fontWeight: 300 }}
-          >
-            {title}
-          </h1>
-        </div>
-
-        {/* Status block */}
-        <div className="flex items-stretch gap-0 shrink-0">
-          <StatusCell label="Награда" value={xpReward} unit="XP" />
-          <div className="w-px bg-white/[0.07]" />
-          <StatusCell label="Тесты" value={testsCount} unit="шт" />
-          <div className="w-px bg-white/[0.07]" />
-          <StatusCell label="Время" value={estimatedMinutes} unit="мин" />
-        </div>
+          </div>
+        ))}
       </div>
-    </div>
-  );
-}
-
-function StatusCell({
-  label,
-  value,
-  unit,
-}: {
-  label: string;
-  value: number;
-  unit: string;
-}) {
-  return (
-    <div className="flex flex-col items-center px-5 py-2 min-w-[72px]">
-      <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/30 mb-1">
-        {label}
-      </span>
-      <span
-        className="text-[44px] leading-none text-white/85"
-        style={{ fontFamily: "var(--font-fraunces)", fontWeight: 300 }}
-      >
-        {value}
-      </span>
-      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/25 mt-0.5">
-        {unit}
-      </span>
     </div>
   );
 }

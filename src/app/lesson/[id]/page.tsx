@@ -271,6 +271,9 @@ export default function LessonPage({
       {/* Hero */}
       <LessonHero
         title={data.lesson.title}
+        order={data.lesson.order}
+        type={data.lesson.type}
+        language={data.lesson.language}
         xpReward={data.lesson.xpReward}
         testsCount={data.lesson.tests.length}
         estimatedMinutes={data.lesson.estimatedMinutes}
@@ -319,54 +322,129 @@ export default function LessonPage({
         </div>
       </div>
 
-      {/* Footer: next lesson (visible after completion) */}
-      <AnimatePresence>
-        {submitResult && (
-          <motion.footer
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="shrink-0 flex items-center justify-between px-6 py-3 border-t border-white/[0.06] bg-[#0B0B0C]"
-          >
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#10B981]">
-                ✓ Пройден
-              </span>
-              {submitResult.xpEarned > 0 && (
-                <span className="font-mono text-[10px] text-white/30">
-                  +{submitResult.xpEarned} XP
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() =>
-                  router.push(
-                    `/dashboard?section=courses&course=${data.course.id}`
-                  )
-                }
-                className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/30 hover:text-white/55 transition-colors"
+      {/* Footer — always visible */}
+      <div
+        className="shrink-0"
+        style={{
+          padding: "26px 40px",
+          borderTop: "2px solid rgba(255,255,255,0.07)",
+          display: "grid",
+          gridTemplateColumns: "1fr auto",
+          alignItems: "center",
+          gap: 30,
+        }}
+      >
+        {/* Next lesson info */}
+        <div style={{ display: "flex", gap: 26, alignItems: "center" }}>
+          {nextLessonId ? (
+            <div>
+              <div
+                className="font-mono"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.3em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.35)",
+                }}
               >
-                К курсу
-              </button>
-
-              {nextLessonId && (
-                <button
-                  onClick={() => router.push(`/lesson/${nextLessonId}`)}
-                  className="flex items-center gap-1.5 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.12em]
-                    bg-[#10B981] text-black border border-black/20
-                    hover:bg-[#0da876] transition-all"
-                  style={{ boxShadow: "2px 2px 0 0 rgba(16,185,129,0.35)" }}
-                >
-                  {nextLessonTitle ?? "Следующий урок"}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )}
+                Следующий урок
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontFamily: "var(--font-fraunces), Georgia, serif",
+                  fontWeight: 400,
+                  fontSize: 22,
+                  color: "#fff",
+                }}
+              >
+                {String((data.lesson.order + 1)).padStart(2, "0")} · {nextLessonTitle}
+              </div>
             </div>
-          </motion.footer>
-        )}
-      </AnimatePresence>
+          ) : (
+            <div
+              className="font-mono"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.3em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.35)",
+              }}
+            >
+              {submitResult ? "Курс завершён!" : data.course.title}
+            </div>
+          )}
+        </div>
+
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            onClick={() => router.push(`/dashboard?section=courses&course=${data.course.id}`)}
+            className="font-mono"
+            style={{
+              padding: "12px 20px",
+              border: "2px solid rgba(255,255,255,0.1)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.7)",
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
+            ← К программе
+          </button>
+
+          {submitResult?.nextLessonId ? (
+            <button
+              onClick={() => router.push(`/lesson/${submitResult.nextLessonId}`)}
+              className="font-mono"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 22px",
+                border: "2px solid #0B0B0C",
+                background: "#10B981",
+                color: "#0B0B0C",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                boxShadow: "3px 3px 0 0 rgba(16,185,129,0.8)",
+                cursor: "pointer",
+              }}
+            >
+              Следующий урок <ArrowRight size={14} />
+            </button>
+          ) : (
+            <button
+              onClick={handleRun}
+              disabled={isRunning}
+              className="font-mono"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 22px",
+                border: "2px solid #0B0B0C",
+                background: data.progress?.completed ? "rgba(16,185,129,0.4)" : "#10B981",
+                color: "#0B0B0C",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                boxShadow: isRunning ? "none" : "3px 3px 0 0 rgba(16,185,129,0.8)",
+                opacity: isRunning ? 0.6 : 1,
+                cursor: isRunning ? "not-allowed" : "pointer",
+              }}
+            >
+              {data.progress?.completed ? "✓ Пройден" : "Сдать решение"}
+              {!data.progress?.completed && <ArrowRight size={14} />}
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Hints drawer */}
       <HintsDrawer

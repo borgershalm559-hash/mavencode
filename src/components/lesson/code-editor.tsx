@@ -2,20 +2,20 @@
 
 import { useCallback, useRef, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Play, RotateCcw, Loader2 } from "lucide-react";
+import { RotateCcw, Loader2 } from "lucide-react";
 import { onPyodideLoadingStatus, type PyodideLoadingStatus } from "./runners/python-runner";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full bg-[#111113]">
+    <div className="flex items-center justify-center h-full" style={{ background: "#0E0E10" }}>
       <Loader2 className="w-5 h-5 text-white/15 animate-spin" />
     </div>
   ),
 });
 
 const LANG_FILENAME: Record<string, string> = {
-  python: "solution.py",
+  python:     "solution.py",
   javascript: "solution.js",
   typescript: "solution.ts",
 };
@@ -56,61 +56,111 @@ export function CodeEditor({
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-[#111113]">
+    <div className="flex flex-col h-full" style={{ background: "#0E0E10" }}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          {/* macOS traffic lights */}
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-            <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-            <div className="w-3 h-3 rounded-full bg-[#28C840]" />
-          </div>
-
-          {/* Filename tab */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-white/[0.08] bg-white/[0.03]">
-            <span className="font-mono text-[10px] text-white/45">{filename}</span>
-          </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 24px",
+          background: "#101013",
+          borderBottom: "2px solid rgba(255,255,255,0.07)",
+        }}
+      >
+        {/* Left: traffic lights + filename */}
+        <div
+          className="font-mono"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 10,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.4)",
+          }}
+        >
+          {/* macOS squares — no border-radius */}
+          <span style={{ width: 8, height: 8, background: "#FF5F56", display: "inline-block" }} />
+          <span style={{ width: 8, height: 8, background: "#FFBD2E", display: "inline-block" }} />
+          <span style={{ width: 8, height: 8, background: "#27C93F", display: "inline-block" }} />
+          <span style={{ marginLeft: 14 }}>{filename}</span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        {/* Right: reset + run */}
+        <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono
-              text-white/30 hover:text-white/55 transition-colors uppercase tracking-[0.1em]"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "7px 12px",
+              border: "2px solid transparent",
+              background: "transparent",
+              color: "rgba(255,255,255,0.45)",
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              cursor: "pointer",
+            }}
           >
-            <RotateCcw className="w-3 h-3" />
-            <span className="hidden sm:inline">Сброс</span>
+            <RotateCcw size={13} /> Сброс
           </button>
 
           <button
             onClick={onRun}
             disabled={isRunning}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-medium
-              bg-[#10B981] text-black border border-black/20 uppercase tracking-[0.08em]
-              hover:bg-[#0da876] transition-all
-              disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              boxShadow: isRunning ? "none" : "2px 2px 0 0 rgba(16,185,129,0.4)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 16px",
+              border: "2px solid #0B0B0C",
+              background: "#10B981",
+              color: "#0B0B0C",
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              boxShadow: isRunning ? "none" : "3px 3px 0 0 rgba(16,185,129,0.67)",
+              opacity: isRunning ? 0.6 : 1,
+              cursor: isRunning ? "not-allowed" : "pointer",
             }}
           >
             {isRunning ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 size={12} className="animate-spin" />
             ) : (
-              <Play className="w-3 h-3 fill-black" />
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#0B0B0C">
+                <polygon points="5,3 19,12 5,21"/>
+              </svg>
             )}
-            {isRunning ? "Выполняю" : "Запустить"}
+            {isRunning ? "Выполняю..." : "Запустить"}
           </button>
         </div>
       </div>
 
       {/* Pyodide loading banner */}
       {language === "python" && pyodideStatus === "loading" && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#10B981]/[0.04] border-b border-[#10B981]/10">
-          <Loader2 className="w-3 h-3 text-[#10B981] animate-spin" />
-          <span className="text-[10px] font-mono text-[#10B981]/70 uppercase tracking-[0.1em]">
-            Загрузка Python (~50 MB)...
-          </span>
+        <div
+          className="font-mono"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 24px",
+            background: "rgba(16,185,129,0.04)",
+            borderBottom: "1px solid rgba(16,185,129,0.1)",
+            fontSize: 10,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "rgba(16,185,129,0.7)",
+          }}
+        >
+          <Loader2 size={12} className="animate-spin" />
+          Загрузка Python (~50 MB)...
         </div>
       )}
 
@@ -124,13 +174,13 @@ export function CodeEditor({
           onMount={handleEditorMount}
           theme="vs-dark"
           options={{
-            fontSize: 13,
+            fontSize: 13.5,
             fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
             lineNumbers: "on",
             renderLineHighlight: "line",
-            padding: { top: 12, bottom: 12 },
+            padding: { top: 20, bottom: 20 },
             smoothScrolling: true,
             cursorBlinking: "smooth",
             cursorSmoothCaretAnimation: "on",

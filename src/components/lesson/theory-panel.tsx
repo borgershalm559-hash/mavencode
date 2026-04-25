@@ -11,54 +11,122 @@ export function TheoryPanel({ content }: TheoryPanelProps) {
   return (
     <div className="h-full flex flex-col">
       {/* Panel label */}
-      <div className="px-5 py-2.5 border-b border-white/[0.06] shrink-0">
-        <span className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/25">
-          § Теория
-        </span>
+      <div
+        className="shrink-0 flex items-center gap-2.5 font-mono border-b border-white/[0.07]"
+        style={{
+          padding: "14px 40px",
+          fontSize: 11,
+          letterSpacing: "0.3em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.45)",
+        }}
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        § Теория
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar">
+      <div
+        className="flex-1 overflow-y-auto custom-scrollbar"
+        style={{ padding: "32px 40px 40px" }}
+      >
         <article>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               h1: ({ children }) => (
                 <h1
-                  className="text-[38px] font-light leading-[1.1] text-white/85 mb-5 mt-0"
-                  style={{ fontFamily: "var(--font-fraunces)", fontWeight: 300 }}
+                  style={{
+                    fontFamily: "var(--font-fraunces), Georgia, serif",
+                    fontWeight: 300,
+                    fontSize: 38,
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.02em",
+                    margin: "0 0 18px",
+                    color: "#fff",
+                  }}
                 >
                   {children}
                 </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-white/55 mb-3 mt-7 flex items-center gap-2">
-                  <span className="text-[#10B981]/50">§</span>
-                  {children}
+                <h2
+                  className="font-mono"
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: "0.3em",
+                    textTransform: "uppercase",
+                    color: "#10B981",
+                    margin: "28px 0 12px",
+                  }}
+                >
+                  § {children}
                 </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 mb-2 mt-5">
+                <h3
+                  style={{
+                    fontFamily: "var(--font-fraunces), Georgia, serif",
+                    fontWeight: 400,
+                    fontSize: 22,
+                    margin: "20px 0 10px",
+                    color: "#fff",
+                  }}
+                >
                   {children}
                 </h3>
               ),
               p: ({ children }) => (
-                <p className="text-white/60 text-sm leading-relaxed mb-3">
+                <p
+                  style={{
+                    margin: "0 0 14px",
+                    fontSize: 15.5,
+                    lineHeight: 1.65,
+                    color: "rgba(255,255,255,0.78)",
+                    textWrap: "pretty",
+                  } as React.CSSProperties}
+                >
                   {children}
                 </p>
               ),
               ul: ({ children }) => (
-                <ul className="text-white/60 text-sm space-y-1.5 mb-3 ml-4 list-none">
+                <ul
+                  style={{
+                    margin: "0 0 16px",
+                    padding: 0,
+                    listStyle: "none",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
                   {children}
                 </ul>
               ),
               ol: ({ children }) => (
-                <ol className="text-white/60 text-sm space-y-1.5 mb-3 ml-4 list-decimal">
+                <ol className="mb-4 ml-4 list-decimal space-y-1.5 text-white/78 text-[15.5px] leading-[1.65]">
                   {children}
                 </ol>
               ),
               li: ({ children }) => (
-                <li className="text-white/60 text-sm leading-relaxed flex items-start gap-2">
-                  <span className="mt-[9px] w-1 h-1 bg-[#10B981]/60 shrink-0" />
+                <li
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    fontSize: 15,
+                    lineHeight: 1.6,
+                    color: "rgba(255,255,255,0.78)",
+                  }}
+                >
+                  <span
+                    style={{
+                      marginTop: 9,
+                      width: 6,
+                      height: 6,
+                      background: "#10B981",
+                      flexShrink: 0,
+                    }}
+                  />
                   <span>{children}</span>
                 </li>
               ),
@@ -66,14 +134,37 @@ export function TheoryPanel({ content }: TheoryPanelProps) {
                 const isBlock = className?.includes("language-");
                 if (isBlock) {
                   return (
-                    <div className="my-4 overflow-hidden border border-white/[0.07]">
-                      <div className="bg-white/[0.03] px-3 py-1.5 border-b border-white/[0.06]">
-                        <span className="font-mono text-[9px] text-white/25 uppercase tracking-[0.3em]">
-                          {className?.replace("language-", "")}
-                        </span>
+                    <div style={{ margin: "16px 0 18px" }}>
+                      <div
+                        className="font-mono"
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          padding: "6px 12px",
+                          background: "rgba(255,255,255,0.025)",
+                          border: "1.5px solid rgba(255,255,255,0.06)",
+                          borderBottom: "none",
+                          fontSize: 10,
+                          letterSpacing: "0.25em",
+                          textTransform: "uppercase",
+                          color: "rgba(255,255,255,0.4)",
+                        }}
+                      >
+                        <span>{className?.replace("language-", "")}</span>
                       </div>
-                      <pre className="p-4 overflow-x-auto bg-[#111113]">
-                        <code className="text-sm text-amber-300/85 font-mono">
+                      <pre
+                        style={{
+                          margin: 0,
+                          padding: 14,
+                          background: "#0E0E10",
+                          border: "1.5px solid rgba(255,255,255,0.06)",
+                          overflow: "auto",
+                        }}
+                      >
+                        <code
+                          className="font-mono"
+                          style={{ fontSize: 13, color: "rgba(251,191,36,0.85)" }}
+                        >
                           {children}
                         </code>
                       </pre>
@@ -81,35 +172,85 @@ export function TheoryPanel({ content }: TheoryPanelProps) {
                   );
                 }
                 return (
-                  <code className="text-[#10B981] bg-[#10B981]/[0.07] px-1.5 py-0.5 text-xs font-mono border border-[#10B981]/10">
+                  <code
+                    className="font-mono"
+                    style={{
+                      color: "#10B981",
+                      background: "rgba(16,185,129,0.08)",
+                      padding: "1px 6px",
+                      fontSize: "0.9em",
+                      border: "1px solid rgba(16,185,129,0.15)",
+                    }}
+                  >
                     {children}
                   </code>
                 );
               },
               pre: ({ children }) => <>{children}</>,
               blockquote: ({ children }) => (
-                <blockquote className="border-l-2 border-[#10B981]/40 pl-4 my-3 text-white/45 italic text-sm">
+                <blockquote
+                  style={{
+                    margin: "16px 0",
+                    padding: "14px 18px",
+                    borderLeft: "3px solid #10B981",
+                    background: "rgba(16,185,129,0.09)",
+                    fontSize: 15,
+                    lineHeight: 1.6,
+                    color: "rgba(255,255,255,0.8)",
+                    fontStyle: "italic",
+                  }}
+                >
                   {children}
                 </blockquote>
               ),
               strong: ({ children }) => (
-                <strong className="text-white/80 font-semibold">{children}</strong>
+                <strong style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
+                  {children}
+                </strong>
               ),
-              hr: () => <hr className="border-white/[0.06] my-6" />,
+              hr: () => (
+                <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "24px 0" }} />
+              ),
               table: ({ children }) => (
-                <div className="overflow-x-auto my-4">
-                  <table className="w-full text-sm text-white/55 border border-white/[0.07] overflow-hidden">
+                <div style={{ overflowX: "auto", margin: "16px 0" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      fontSize: 14,
+                      color: "rgba(255,255,255,0.6)",
+                      border: "1.5px solid rgba(255,255,255,0.07)",
+                    }}
+                  >
                     {children}
                   </table>
                 </div>
               ),
               th: ({ children }) => (
-                <th className="bg-white/[0.03] px-3 py-2 text-left text-white/60 font-mono font-medium text-[10px] border-b border-white/[0.06] uppercase tracking-[0.1em]">
+                <th
+                  className="font-mono"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    padding: "8px 12px",
+                    textAlign: "left",
+                    color: "rgba(255,255,255,0.7)",
+                    fontWeight: 500,
+                    fontSize: 10,
+                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                  }}
+                >
                   {children}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-3 py-2 border-b border-white/[0.04] text-xs">
+                <td
+                  style={{
+                    padding: "8px 12px",
+                    borderBottom: "1px solid rgba(255,255,255,0.04)",
+                    fontSize: 13,
+                  }}
+                >
                   {children}
                 </td>
               ),
