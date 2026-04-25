@@ -1,10 +1,12 @@
-import type { CodeRunner, Test, RunResult, TestResult } from "./types";
+import type { CodeRunner, Test, IoTest, RunResult, TestResult } from "./types";
 
 export class JsRunner implements CodeRunner {
   private iframe: HTMLIFrameElement | null = null;
 
   async run(code: string, tests: Test[]): Promise<RunResult> {
     this.destroy();
+    // JS runner only handles IoTest-shaped tests.
+    const ioTests = tests as IoTest[];
 
     return new Promise<RunResult>((resolve) => {
       const iframe = document.createElement("iframe");
@@ -40,7 +42,7 @@ export class JsRunner implements CodeRunner {
 
       window.addEventListener("message", handler);
 
-      const testsJson = JSON.stringify(tests);
+      const testsJson = JSON.stringify(ioTests);
 
       const srcdoc = `<!DOCTYPE html><html><body><script>
 (function() {

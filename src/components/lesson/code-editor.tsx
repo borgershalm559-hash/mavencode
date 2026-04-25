@@ -18,6 +18,7 @@ const LANG_FILENAME: Record<string, string> = {
   python:     "solution.py",
   javascript: "solution.js",
   typescript: "solution.ts",
+  html:       "index.html",
 };
 
 interface CodeEditorProps {
@@ -48,7 +49,10 @@ export function CodeEditor({
     }
   }, [language]);
 
-  const monacoLanguage = language === "python" ? "python" : "javascript";
+  const monacoLanguage =
+    language === "python" ? "python"
+    : language === "html"   ? "html"
+    : "javascript";
   const filename = LANG_FILENAME[language] ?? `solution.${language}`;
 
   const handleEditorMount = useCallback((editor: unknown) => {

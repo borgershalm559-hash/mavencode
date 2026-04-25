@@ -2,7 +2,7 @@
 // Runs in a dedicated Web Worker — no DOM, no main-thread access.
 // Pyodide is loaded once and reused across all run() calls.
 
-import type { Test, RunResult } from "./types";
+import type { Test, IoTest, RunResult } from "./types";
 
 interface PyodideInterface {
   runPythonAsync: (code: string) => Promise<unknown>;
@@ -26,6 +26,8 @@ async function getPyodide(): Promise<PyodideInterface> {
 
 self.onmessage = async (event: MessageEvent) => {
   const { id, code, tests } = event.data as { id: number; code: string; tests: Test[] };
+  // Python runner only handles IoTest-shaped tests.
+  const ioTests = tests as IoTest[];
   let result: RunResult;
 
   try {
@@ -48,7 +50,7 @@ sys.stdout = StringIO()
     const output = String(pyodide.runPython("sys.stdout.getvalue()"));
     const testResults = [];
 
-    for (const test of tests) {
+    for (const test of ioTests) {
       try {
         const actual = String(await pyodide.runPythonAsync(test.input));
         testResults.push({

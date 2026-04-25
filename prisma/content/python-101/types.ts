@@ -1,21 +1,4 @@
-export type LessonType = "code" | "fill-blanks" | "fix-bug" | "quiz";
-
-export interface TestCase {
-  input: string;
-  expected: string;
-  description: string;
-}
-
-export interface LessonContent {
-  title: string;
-  order: number;
-  type: LessonType;
-  language: "python";
-  xpReward: number;
-  content: string;      // markdown body
-  starterCode: string;
-  solution: string;
-  tests: TestCase[];
-  hints: string[];      // exactly 3 entries (soft / concrete / full-solution)
-  isAvailable: boolean;
-}
+// Re-export shared types so existing python-101 lesson files keep working
+// with `import type { LessonContent } from "../types"`.
+export * from "../types";
+export type { IoTestCase as TestCase } from "../types";

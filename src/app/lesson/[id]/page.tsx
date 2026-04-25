@@ -15,6 +15,7 @@ import { CodeEditor } from "@/components/lesson/code-editor";
 import { ConsoleOutput } from "@/components/lesson/console-output";
 import { HintsDrawer } from "@/components/lesson/hints-drawer";
 import { QuizTask } from "@/components/lesson/quiz-task";
+import { PreviewPanel } from "@/components/lesson/preview-panel";
 import type { RunResult, Test } from "@/components/lesson/runners/types";
 
 interface LessonStatus {
@@ -166,6 +167,11 @@ export default function LessonPage({
           "@/components/lesson/runners/python-runner"
         );
         runner = new PythonRunner();
+      } else if (language === "html") {
+        const { HtmlRunner } = await import(
+          "@/components/lesson/runners/html-runner"
+        );
+        runner = new HtmlRunner();
       } else {
         const { JsRunner } = await import(
           "@/components/lesson/runners/js-runner"
@@ -247,6 +253,7 @@ export default function LessonPage({
   }
 
   const isQuiz = data.lesson.type === "quiz";
+  const isHtml = data.lesson.language === "html";
   const nextLessonId = submitResult?.nextLessonId ?? data.nextLesson?.id ?? null;
   const nextLessonTitle = data.nextLesson?.title ?? null;
 
@@ -304,11 +311,11 @@ export default function LessonPage({
           <TheoryPanel content={data.lesson.content} />
         </div>
 
-        {/* RIGHT — Editor + Console */}
+        {/* RIGHT — Editor + (Preview for HTML) + Console */}
         <div
           style={{
             display: "grid",
-            gridTemplateRows: "auto 1fr auto",
+            gridTemplateRows: isHtml && !isQuiz ? "auto 1fr 240px auto" : "auto 1fr auto",
             background: "#0E0E10",
           }}
           className="min-h-0 overflow-hidden"
@@ -331,6 +338,7 @@ export default function LessonPage({
                 onReset={handleReset}
                 isRunning={isRunning}
               />
+              {isHtml && <PreviewPanel code={code} />}
               <ConsoleOutput result={runResult} isRunning={isRunning} />
             </>
           )}

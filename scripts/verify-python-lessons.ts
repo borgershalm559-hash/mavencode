@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PYTHON_101_LESSONS } from "../prisma/content/python-101";
-import type { LessonContent } from "../prisma/content/python-101/types";
+import type { LessonContent, IoTestCase } from "../prisma/content/python-101/types";
 
 function runPython(code: string): string {
   const tmp = join(tmpdir(), `py-verify-${Date.now()}-${Math.random().toString(36).slice(2)}.py`);
@@ -27,7 +27,8 @@ function verifyLesson(lesson: LessonContent): { ok: boolean; failures: string[] 
   const failures: string[] = [];
   if (lesson.tests.length === 0) return { ok: true, failures: [] };
 
-  for (const test of lesson.tests) {
+  // Python lessons always use IoTestCase shape.
+  for (const test of lesson.tests as IoTestCase[]) {
     try {
       const code = `${lesson.solution}\nprint(${test.input})`;
       const actual = runPython(code);

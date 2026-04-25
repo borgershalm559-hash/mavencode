@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Play } from "lucide-react";
-import type { RunResult, Test } from "./runners/types";
+import type { RunResult, Test, IoTest } from "./runners/types";
 
 interface QuizTaskProps {
   tests: Test[];
@@ -15,10 +15,10 @@ export function QuizTask({ tests, onResult, isRunning }: QuizTaskProps) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  // Each test.input is the question, test.expected is the correct answer,
-  // test.description contains pipe-separated options (options may themselves
-  // contain commas, so we use | as delimiter).
-  const questions = tests.map((t) => ({
+  // Quiz lessons always store tests in IoTest shape — input is the question,
+  // expected is the correct answer, description is "|"-joined options.
+  const ioTests = tests as IoTest[];
+  const questions = ioTests.map((t) => ({
     question: t.input,
     options: t.description.split("|").map((o) => o.trim()).filter(Boolean),
     correct: t.expected,
