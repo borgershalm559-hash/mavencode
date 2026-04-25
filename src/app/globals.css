@@ -177,7 +177,7 @@ textarea:disabled {
   border-radius: 0;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.35);
+  background: #10B981;
 }
 .custom-scrollbar::-webkit-scrollbar-corner {
   background: transparent;

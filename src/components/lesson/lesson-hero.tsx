@@ -29,7 +29,7 @@ export function LessonHero({
             </div>
           )}
           <h1
-            className="text-[clamp(28px,5vw,52px)] font-light leading-[1.05] text-white/90 truncate"
+            className="text-[clamp(36px,5.5vw,76px)] font-light leading-[1.05] text-white/90"
             style={{ fontFamily: "var(--font-fraunces)", fontWeight: 300 }}
           >
             {title}
@@ -64,7 +64,7 @@ function StatusCell({
         {label}
       </span>
       <span
-        className="text-[36px] leading-none text-white/85"
+        className="text-[44px] leading-none text-white/85"
         style={{ fontFamily: "var(--font-fraunces)", fontWeight: 300 }}
       >
         {value}
