@@ -8,11 +8,17 @@ import { onPyodideLoadingStatus, type PyodideLoadingStatus } from "./runners/pyt
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full bg-[#1A1A1F]">
-      <Loader2 className="w-5 h-5 text-white/20 animate-spin" />
+    <div className="flex items-center justify-center h-full bg-[#111113]">
+      <Loader2 className="w-5 h-5 text-white/15 animate-spin" />
     </div>
   ),
 });
+
+const LANG_FILENAME: Record<string, string> = {
+  python: "solution.py",
+  javascript: "solution.js",
+  typescript: "solution.ts",
+};
 
 interface CodeEditorProps {
   code: string;
@@ -43,55 +49,68 @@ export function CodeEditor({
   }, [language]);
 
   const monacoLanguage = language === "python" ? "python" : "javascript";
+  const filename = LANG_FILENAME[language] ?? `solution.${language}`;
 
   const handleEditorMount = useCallback((editor: unknown) => {
     editorRef.current = editor;
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[#111113]">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-surface border-b-2 border-white/[0.07]">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/30 uppercase tracking-widest font-mono">
-            {language}
-          </span>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          {/* macOS traffic lights */}
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+            <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+            <div className="w-3 h-3 rounded-full bg-[#28C840]" />
+          </div>
+
+          {/* Filename tab */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 border border-white/[0.08] bg-white/[0.03]">
+            <span className="font-mono text-[10px] text-white/45">{filename}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono
-              text-white/40 hover:text-white/70 transition-all border-2 border-transparent hover:border-white/[0.07]"
+            className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono
+              text-white/30 hover:text-white/55 transition-colors uppercase tracking-[0.1em]"
           >
             <RotateCcw className="w-3 h-3" />
-            Сброс
+            <span className="hidden sm:inline">Сброс</span>
           </button>
 
           <button
             onClick={onRun}
             disabled={isRunning}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium
-              bg-[#10B981] text-black border-2 border-black uppercase tracking-[0.05em]
-              hover:bg-[#047857] transition-all
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-medium
+              bg-[#10B981] text-black border border-black/20 uppercase tracking-[0.08em]
+              hover:bg-[#0da876] transition-all
               disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ boxShadow: isRunning ? "none" : "3px 3px 0 0 rgba(16,185,129,0.50)" }}
+            style={{
+              boxShadow: isRunning ? "none" : "2px 2px 0 0 rgba(16,185,129,0.4)",
+            }}
           >
             {isRunning ? (
               <Loader2 className="w-3 h-3 animate-spin" />
             ) : (
-              <Play className="w-3 h-3" />
+              <Play className="w-3 h-3 fill-black" />
             )}
-            {isRunning ? "Выполняю..." : "Запустить"}
+            {isRunning ? "Выполняю" : "Запустить"}
           </button>
         </div>
       </div>
 
-      {/* Pyodide loading overlay */}
+      {/* Pyodide loading banner */}
       {language === "python" && pyodideStatus === "loading" && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#10B981]/[0.06] border-b border-[#10B981]/10">
-          <Loader2 className="w-3.5 h-3.5 text-[#10B981] animate-spin" />
-          <span className="text-xs text-[#10B981]/80">Загрузка Python (~50MB)...</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#10B981]/[0.04] border-b border-[#10B981]/10">
+          <Loader2 className="w-3 h-3 text-[#10B981] animate-spin" />
+          <span className="text-[10px] font-mono text-[#10B981]/70 uppercase tracking-[0.1em]">
+            Загрузка Python (~50 MB)...
+          </span>
         </div>
       )}
 

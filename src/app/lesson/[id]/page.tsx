@@ -8,12 +8,22 @@ import { ArrowRight, Trophy, Loader2, Lock, Award } from "lucide-react";
 
 import { fetcher } from "@/lib/fetcher";
 import { LessonHeader } from "@/components/lesson/lesson-header";
+import { LessonHero } from "@/components/lesson/lesson-hero";
+import { LessonProgressStrip } from "@/components/lesson/lesson-progress-strip";
 import { TheoryPanel } from "@/components/lesson/theory-panel";
 import { CodeEditor } from "@/components/lesson/code-editor";
 import { ConsoleOutput } from "@/components/lesson/console-output";
 import { HintsDrawer } from "@/components/lesson/hints-drawer";
 import { QuizTask } from "@/components/lesson/quiz-task";
 import type { RunResult, Test } from "@/components/lesson/runners/types";
+
+interface LessonStatus {
+  id: string;
+  order: number;
+  title: string;
+  completed: boolean;
+  isAvailable: boolean;
+}
 
 interface LessonData {
   lesson: {
@@ -27,12 +37,15 @@ interface LessonData {
     xpReward: number;
     order: number;
     hints: string[];
+    estimatedMinutes: number;
   };
   course: {
     id: string;
     title: string;
     totalLessons: number;
+    lessons: LessonStatus[];
   };
+  nextLesson: { id: string; title: string } | null;
   progress: {
     completed: boolean;
     score: number;
@@ -69,11 +82,11 @@ export default function LessonPage({
   const [hintsOpen, setHintsOpen] = useState(false);
   const [submitResult, setSubmitResult] = useState<SubmitResponse | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftAbortRef = useRef<AbortController | null>(null);
   const codeInitialized = useRef(false);
 
-  // Initialize code from draft or starterCode
   useEffect(() => {
     if (data && !codeInitialized.current) {
       setCode(data.progress?.draft || data.lesson.starterCode || "");
@@ -82,10 +95,10 @@ export default function LessonPage({
     }
   }, [data]);
 
-  // Auto-save draft
   const saveDraft = useCallback(
     (newCode: string) => {
       if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+      setIsSaving(true);
       draftTimerRef.current = setTimeout(() => {
         draftAbortRef.current?.abort();
         draftAbortRef.current = new AbortController();
@@ -94,10 +107,11 @@ export default function LessonPage({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: newCode }),
           signal: draftAbortRef.current.signal,
-        }).catch((e) => {
-          if (e instanceof DOMException && e.name === "AbortError") return;
-          console.warn("[Draft save failed]", e);
-        });
+        })
+          .catch((e) => {
+            if (e instanceof DOMException && e.name === "AbortError") return;
+          })
+          .finally(() => setIsSaving(false));
       }, 3000);
     },
     [id]
@@ -119,6 +133,22 @@ export default function LessonPage({
     setSubmitResult(null);
   }, [data]);
 
+  const handleSubmit = async (_result?: RunResult) => {
+    try {
+      const res = await fetch(`/api/lessons/${id}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, hintsUsed }),
+      });
+      const submitData: SubmitResponse = await res.json();
+      setSubmitResult(submitData);
+      setShowSuccess(true);
+      mutate();
+    } catch {
+      // silent
+    }
+  };
+
   const handleRun = useCallback(async () => {
     if (!data || isRunning) return;
     setIsRunning(true);
@@ -126,12 +156,7 @@ export default function LessonPage({
     setShowSuccess(false);
 
     try {
-      let result: RunResult;
-
-      if (data.lesson.type === "quiz") {
-        // Quiz is handled by QuizTask component
-        return;
-      }
+      if (data.lesson.type === "quiz") return;
 
       const { language } = data.lesson;
       let runner;
@@ -148,11 +173,10 @@ export default function LessonPage({
         runner = new JsRunner();
       }
 
-      result = await runner.run(code, data.lesson.tests);
+      const result = await runner.run(code, data.lesson.tests);
       runner.destroy();
       setRunResult(result);
 
-      // If all tests pass, submit
       const allPassed =
         result.tests.length > 0 && result.tests.every((t) => t.passed);
       if (allPassed && !result.error) {
@@ -168,22 +192,6 @@ export default function LessonPage({
       setIsRunning(false);
     }
   }, [data, code, isRunning, hintsUsed]);
-
-  const handleSubmit = async (result?: RunResult) => {
-    try {
-      const res = await fetch(`/api/lessons/${id}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, hintsUsed }),
-      });
-      const submitData: SubmitResponse = await res.json();
-      setSubmitResult(submitData);
-      setShowSuccess(true);
-      mutate();
-    } catch (e) {
-      console.error("[Submit failed]", e);
-    }
-  };
 
   const handleQuizResult = useCallback(
     async (result: RunResult) => {
@@ -203,66 +211,88 @@ export default function LessonPage({
     setHintsUsed((prev) => prev + 1);
   }, []);
 
-  // Loading state
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-canvas">
-        <Loader2 className="w-6 h-6 text-[#10B981] animate-spin" />
+      <div className="h-screen flex items-center justify-center bg-[#0B0B0C]">
+        <Loader2 className="w-5 h-5 text-[#10B981] animate-spin" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="h-screen flex items-center justify-center bg-canvas">
-        <p className="text-white/40 font-mono text-sm">Урок не найден</p>
+      <div className="h-screen flex items-center justify-center bg-[#0B0B0C]">
+        <p className="text-white/30 font-mono text-xs uppercase tracking-[0.2em]">
+          Урок не найден
+        </p>
       </div>
     );
   }
 
-  // Locked lesson
   if (!data.isAvailable) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-canvas gap-4">
-        <Lock className="w-8 h-8 text-white/20" />
-        <p className="text-white/40 text-sm font-mono">
-          Пройдите предыдущий урок чтобы открыть этот
+      <div className="h-screen flex flex-col items-center justify-center bg-[#0B0B0C] gap-4">
+        <Lock className="w-6 h-6 text-white/15" />
+        <p className="text-white/30 text-xs font-mono uppercase tracking-[0.15em]">
+          Пройдите предыдущий урок
         </p>
         <button
           onClick={() => router.back()}
-          className="text-[#10B981] text-sm font-mono hover:text-[#047857] transition-colors"
+          className="font-mono text-[11px] text-[#10B981] hover:text-[#0da876] transition-colors uppercase tracking-[0.15em]"
         >
-          ← Назад к курсу
+          ← Назад
         </button>
       </div>
     );
   }
 
   const isQuiz = data.lesson.type === "quiz";
+  const nextLessonId = submitResult?.nextLessonId ?? data.nextLesson?.id ?? null;
+  const nextLessonTitle = data.nextLesson?.title ?? null;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-canvas overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#0B0B0C] overflow-hidden">
+      {/* Top 3px accent stripe */}
+      <div className="h-[3px] bg-[#10B981] shrink-0" />
+
+      {/* Header */}
       <LessonHeader
         courseId={data.course.id}
         courseTitle={data.course.title}
-        lessonTitle={data.lesson.title}
         lessonOrder={data.lesson.order}
         totalLessons={data.course.totalLessons}
+        language={data.lesson.language}
         hintsUsed={hintsUsed}
         totalHints={data.lesson.hints.length}
         onHintRequest={() => setHintsOpen(true)}
+        isSaving={isSaving}
+      />
+
+      {/* Hero */}
+      <LessonHero
+        title={data.lesson.title}
+        xpReward={data.lesson.xpReward}
+        testsCount={data.lesson.tests.length}
+        estimatedMinutes={data.lesson.estimatedMinutes}
         completed={data.progress?.completed ?? false}
       />
 
-      {/* Main split view */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-        {/* Left: Theory */}
-        <div className="lg:w-[45%] w-full h-[40vh] lg:h-full min-h-0 border-b-2 lg:border-b-0 lg:border-r-2 border-white/[0.07] bg-surface">
+      {/* Progress strip */}
+      <LessonProgressStrip
+        lessons={data.course.lessons}
+        currentLessonId={id}
+        courseTitle={data.course.title}
+      />
+
+      {/* Main split */}
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+        {/* Theory */}
+        <div className="lg:w-[45%] w-full h-[38vh] lg:h-full min-h-0 border-b lg:border-b-0 lg:border-r border-white/[0.06] bg-[#0E0E10]">
           <TheoryPanel content={data.lesson.content} />
         </div>
 
-        {/* Right: Editor + Console */}
-        <div className="flex-1 flex flex-col min-h-0 lg:h-full">
+        {/* Editor + Console */}
+        <div className="flex-1 flex flex-col min-h-0">
           {isQuiz ? (
             <QuizTask
               tests={data.lesson.tests}
@@ -281,13 +311,62 @@ export default function LessonPage({
                   isRunning={isRunning}
                 />
               </div>
-              <div className="h-[200px] lg:h-[220px]">
+              <div className="h-[180px] lg:h-[200px] shrink-0">
                 <ConsoleOutput result={runResult} isRunning={isRunning} />
               </div>
             </>
           )}
         </div>
       </div>
+
+      {/* Footer: next lesson (visible after completion) */}
+      <AnimatePresence>
+        {submitResult && (
+          <motion.footer
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="shrink-0 flex items-center justify-between px-6 py-3 border-t border-white/[0.06] bg-[#0B0B0C]"
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#10B981]">
+                ✓ Пройден
+              </span>
+              {submitResult.xpEarned > 0 && (
+                <span className="font-mono text-[10px] text-white/30">
+                  +{submitResult.xpEarned} XP
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() =>
+                  router.push(
+                    `/dashboard?section=courses&course=${data.course.id}`
+                  )
+                }
+                className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/30 hover:text-white/55 transition-colors"
+              >
+                К курсу
+              </button>
+
+              {nextLessonId && (
+                <button
+                  onClick={() => router.push(`/lesson/${nextLessonId}`)}
+                  className="flex items-center gap-1.5 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.12em]
+                    bg-[#10B981] text-black border border-black/20
+                    hover:bg-[#0da876] transition-all"
+                  style={{ boxShadow: "2px 2px 0 0 rgba(16,185,129,0.35)" }}
+                >
+                  {nextLessonTitle ?? "Следующий урок"}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </motion.footer>
+        )}
+      </AnimatePresence>
 
       {/* Hints drawer */}
       <HintsDrawer
@@ -306,73 +385,78 @@ export default function LessonPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setShowSuccess(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 20 }}
-              className="bg-surface border-2 border-[#10B981]/20 p-8 max-w-sm w-full mx-4 text-center"
-              style={{ boxShadow: "8px 8px 0 0 rgba(16,185,129,0.5)" }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: "spring", damping: 20, stiffness: 200 }}
+              className="bg-[#0E0E10] border border-white/[0.09] p-8 max-w-sm w-full mx-4 text-center"
+              style={{ boxShadow: "8px 8px 0 0 rgba(16,185,129,0.35)" }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-16 h-16 border-2 border-[#10B981]/30 bg-[#10B981]/[0.08] flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-8 h-8 text-[#10B981]" />
+              <div className="w-14 h-14 border border-[#10B981]/20 bg-[#10B981]/[0.06] flex items-center justify-center mx-auto mb-5">
+                <Trophy className="w-7 h-7 text-[#10B981]" />
               </div>
 
-              <h2 className="text-lg font-bold font-mono text-white/90 uppercase tracking-[0.1em] mb-1">
-                Урок пройден!
+              <h2
+                className="text-[28px] font-light text-white/85 mb-1 leading-tight"
+                style={{ fontFamily: "var(--font-fraunces)", fontWeight: 300 }}
+              >
+                Урок пройден
               </h2>
 
               {submitResult.xpEarned > 0 && (
-                <p className="text-[#10B981] text-sm font-mono font-medium mb-4">
+                <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#10B981] mb-5">
                   +{submitResult.xpEarned} XP
                 </p>
               )}
-
               {submitResult.xpEarned === 0 && (
-                <p className="text-white/30 text-xs font-mono mb-4">
-                  Урок уже был пройден ранее
+                <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/20 mb-5">
+                  Уже пройден ранее
                 </p>
               )}
 
-              {submitResult.unlockedAchievements && submitResult.unlockedAchievements.length > 0 && (
-                <div className="mb-4 space-y-2">
-                  {submitResult.unlockedAchievements.map((a) => (
-                    <motion.div
-                      key={a.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="flex items-center gap-2 px-3 py-2 border-2 border-[#10B981]/20 bg-[#10B981]/[0.06]"
-                    >
-                      <Award className="w-4 h-4 text-[#10B981]" />
-                      <div className="text-left">
-                        <div className="text-xs font-semibold font-mono text-[#10B981]">{a.title}</div>
-                        <div className="text-[10px] text-white/40">{a.description}</div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
+              {submitResult.unlockedAchievements &&
+                submitResult.unlockedAchievements.length > 0 && (
+                  <div className="mb-5 space-y-2">
+                    {submitResult.unlockedAchievements.map((a) => (
+                      <motion.div
+                        key={a.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.25 }}
+                        className="flex items-center gap-2 px-3 py-2 border border-[#10B981]/15 bg-[#10B981]/[0.05]"
+                      >
+                        <Award className="w-4 h-4 text-[#10B981] shrink-0" />
+                        <div className="text-left">
+                          <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#10B981]">
+                            {a.title}
+                          </div>
+                          <div className="text-[10px] text-white/30">{a.description}</div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
 
               <div className="flex flex-col gap-2">
-                {submitResult.nextLessonId ? (
+                {nextLessonId ? (
                   <button
-                    onClick={() =>
-                      router.push(`/lesson/${submitResult.nextLessonId}`)
-                    }
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 border-2 border-black text-sm font-mono font-medium
-                      bg-[#10B981] text-black uppercase tracking-[0.08em]
-                      hover:bg-[#047857] transition-all"
-                    style={{ boxShadow: "4px 4px 0 0 rgba(16,185,129,0.50)" }}
+                    onClick={() => router.push(`/lesson/${nextLessonId}`)}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.1em]
+                      bg-[#10B981] text-black border border-black/20
+                      hover:bg-[#0da876] transition-all"
+                    style={{ boxShadow: "3px 3px 0 0 rgba(16,185,129,0.4)" }}
                   >
-                    Следующий урок
-                    <ArrowRight className="w-4 h-4" />
+                    {nextLessonTitle ?? "Следующий урок"}
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
-                  <p className="text-emerald-600 text-sm font-mono mb-2">
-                    Это был последний урок!
+                  <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#10B981]/60">
+                    Курс завершён!
                   </p>
                 )}
 
@@ -382,7 +466,7 @@ export default function LessonPage({
                       `/dashboard?section=courses&course=${data.course.id}`
                     )
                   }
-                  className="text-white/40 text-sm font-mono hover:text-white/60 transition-colors"
+                  className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/25 hover:text-white/50 transition-colors"
                 >
                   Вернуться к курсу
                 </button>

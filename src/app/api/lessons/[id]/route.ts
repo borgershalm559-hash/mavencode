@@ -23,7 +23,7 @@ export async function GET(
         include: {
           lessons: {
             orderBy: { order: "asc" },
-            select: { id: true, order: true, progress: { where: { userId }, select: { completed: true } } },
+            select: { id: true, order: true, title: true, progress: { where: { userId }, select: { completed: true } } },
           },
         },
       },
@@ -46,6 +46,25 @@ export async function GET(
     (courseLessons[lessonIndex - 1].progress.length > 0 &&
       courseLessons[lessonIndex - 1].progress[0].completed);
 
+  // Build per-lesson availability and status for the progress strip
+  const lessonsWithStatus = courseLessons.map((l, i) => ({
+    id: l.id,
+    order: l.order,
+    title: l.title,
+    completed: l.progress.length > 0 && l.progress[0].completed,
+    isAvailable:
+      i === 0 ||
+      (courseLessons[i - 1].progress.length > 0 &&
+        courseLessons[i - 1].progress[0].completed),
+  }));
+
+  const nextLesson =
+    lessonIndex < courseLessons.length - 1
+      ? { id: courseLessons[lessonIndex + 1].id, title: courseLessons[lessonIndex + 1].title }
+      : null;
+
+  const estimatedMinutes = Math.max(10, Math.round(lesson.xpReward * 0.25));
+
   const userProgress = lesson.progress[0] || null;
 
   return NextResponse.json({
@@ -60,12 +79,15 @@ export async function GET(
       xpReward: lesson.xpReward,
       order: lesson.order,
       hints: safeJsonParse(lesson.hints, []),
+      estimatedMinutes,
     },
     course: {
       id: lesson.course.id,
       title: lesson.course.title,
       totalLessons: courseLessons.length,
+      lessons: lessonsWithStatus,
     },
+    nextLesson,
     progress: userProgress
       ? {
           completed: userProgress.completed,
