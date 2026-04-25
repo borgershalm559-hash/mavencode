@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getAuthUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const rl = await rateLimit("changePassword", getIp(req));
+  if (rl instanceof NextResponse) return rl;
+
   const [userId, error] = await getAuthUserId();
   if (error) return error;
 

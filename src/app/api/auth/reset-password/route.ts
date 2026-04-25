@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 const MIN_PASSWORD_LENGTH = 12;
 
 export async function POST(req: Request) {
+  const rl = await rateLimit("forgotPassword", getIp(req));
+  if (rl instanceof NextResponse) return rl;
+
   try {
     const { token, password } = await req.json();
 

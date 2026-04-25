@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
+  const rl = await rateLimit("forgotPassword", getIp(req));
+  if (rl instanceof NextResponse) return rl;
+
   try {
     const { email } = await req.json();
     if (!email) return NextResponse.json({ error: "Email обязателен" }, { status: 400 });

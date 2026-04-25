@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const rl = await rateLimit("register", getIp(req));
+  if (rl instanceof NextResponse) return rl;
+
   try {
     const body = await req.json();
     const name = body.name?.trim() || "";

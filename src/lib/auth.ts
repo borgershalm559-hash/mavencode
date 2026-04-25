@@ -5,30 +5,7 @@ import Yandex from "next-auth/providers/yandex";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
-
-/**
- * Server-side in-memory rate limiter.
- *
- * NOTE: This is best-effort. On serverless/multi-instance deployments
- * (Vercel) the Map is per-instance, so an attacker hitting different
- * instances can bypass the limit. A Redis/Postgres-backed limiter is
- * planned for Wave 2 of the security pass.
- */
-const serverRL = new Map<string, { count: number; resetAt: number }>();
-function checkServerRL(email: string): boolean {
-  const now = Date.now();
-  const entry = serverRL.get(email);
-  if (!entry || entry.resetAt < now) return false;
-  return entry.count >= 5;
-}
-function recordServerFail(email: string) {
-  const now = Date.now();
-  const entry = serverRL.get(email);
-  if (!entry || entry.resetAt < now) {
-    serverRL.set(email, { count: 1, resetAt: now + 15 * 60 * 1000 });
-  } else { entry.count++; }
-}
-function clearServerRL(email: string) { serverRL.delete(email); }
+import { rateLimit } from "./rate-limit";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -70,22 +47,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!email || !password) return null;
 
-        // Server-side rate limit check
-        if (checkServerRL(email)) return null;
+        // Distributed rate limit: 5 attempts per 15 min per email (Upstash).
+        // Falls back to allow-all when UPSTASH_REDIS_REST_URL is not set.
+        const rl = await rateLimit("auth", email);
+        if (!(rl as { ok: true }).ok) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.password) {
-          recordServerFail(email);
-          return null;
-        }
+        if (!user || !user.password) return null;
 
         const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) {
-          recordServerFail(email);
-          return null;
-        }
+        if (!isValid) return null;
 
-        clearServerRL(email);
         return { id: user.id, name: user.name, email: user.email, image: user.image };
       },
     }),
