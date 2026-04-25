@@ -142,7 +142,11 @@ export default function DashboardPage() {
                   transition={smoothTransition}
                   className="space-y-4"
                 >
-                  <SectionHeader active={active} />
+                  {/* Compact section header — hidden for sections that
+                      already render their own large hero (courses/news/library) */}
+                  {!["courses", "news", "library"].includes(active) && (
+                    <SectionHeader active={active} />
+                  )}
                   {active === "profile" && <ProfileSection profile={profile} loading={profileLoading} onProfileUpdate={(data) => mutateProfile(profile ? { ...profile, ...data } : undefined, { revalidate: true })} onNavigate={handleNavigate} />}
                   {active === "courses" && <CoursesSection courses={courses} loading={coursesLoading} onSelectCourse={setSelectedCourse} />}
                   {active === "news" && <NewsSection news={news} loading={newsLoading} selectedNews={null} onSelectNews={setSelectedNews} onBack={() => {}} />}
