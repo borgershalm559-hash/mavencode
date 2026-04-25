@@ -20,8 +20,11 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://avatars.githubusercontent.com https://avatars.yandex.net https://*.userapi.com https://*.vk.com https://sun9-*.userapi.com",
+      // Monaco editor loads its main CSS from jsdelivr at runtime
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      // *.userapi.com already covers sun9-*.userapi.com; CSP wildcards
+      // must be full-subdomain (`*.host`), partial (`sun9-*`) is invalid.
+      "img-src 'self' data: blob: https://avatars.githubusercontent.com https://avatars.yandex.net https://*.userapi.com https://*.vk.com",
       "font-src 'self' data:",
       "connect-src 'self' https://cdn.jsdelivr.net https://id.vk.com https://*.userapi.com",
       "worker-src 'self' blob:",
@@ -42,7 +45,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "avatars.yandex.net" },
       { protocol: "https", hostname: "*.userapi.com" },
       { protocol: "https", hostname: "*.vk.com" },
-      { protocol: "https", hostname: "sun9-*.userapi.com" },
     ],
   },
   async headers() {
