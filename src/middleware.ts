@@ -1,5 +1,10 @@
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { authConfig } from "@/lib/auth.config";
+
+// Use the edge-compatible config (no Prisma, no bcrypt) to keep the
+// middleware bundle well under Vercel's 1 MB Edge Function limit.
+const { auth } = NextAuth(authConfig);
 
 const PROTECTED_PREFIXES = ["/dashboard", "/lesson", "/admin", "/pvp"];
 
@@ -16,7 +21,6 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Admin pages additionally require role === "admin"
   if (pathname.startsWith("/admin") && req.auth?.user?.role !== "admin") {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
