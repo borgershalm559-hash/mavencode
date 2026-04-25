@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   CheckCircle, Lock, Code, Puzzle, Bug, HelpCircle, BookOpen, Clock,
 } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { CoursesSkeleton } from "./loading-skeleton";
+import { variants, variantsStill, stagger, tx, DUR } from "./courses/motion";
+import { useCountUp } from "./courses/use-count-up";
 import type { CourseListItem, CourseDetail } from "@/types/dashboard";
 
 /* ── Palette ──────────────────────────────────────────── */
@@ -153,15 +156,27 @@ function TrackRailItem({ track, courses, selected, onSelect }: {
   const abbr = track.id === "all" ? "★" : track.id.slice(0, 2).toUpperCase();
 
   return (
-    <button
+    <motion.button
       onClick={onSelect}
-      className={`w-full text-left px-4 py-3 border-l-2 transition flex items-start gap-3 ${
-        selected ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
-      }`}
-      style={{ borderColor: selected ? track.color : "transparent" }}
+      whileHover={{ x: 2 }}
+      transition={tx()}
+      className="w-full text-left px-4 py-3 flex items-start gap-3 relative"
+      style={{
+        background: selected ? "rgba(255,255,255,0.04)" : "transparent",
+      }}
     >
+      {/* Animated active indicator — slides between selected items */}
+      {selected && (
+        <motion.span
+          layoutId="track-active-indicator"
+          className="absolute left-0 top-0 bottom-0 w-[2px]"
+          style={{ background: track.color }}
+          transition={tx(DUR.fast)}
+        />
+      )}
+
       <div
-        className="size-9 flex items-center justify-center font-mono text-[11px] font-black flex-shrink-0 border-2"
+        className="size-9 flex items-center justify-center font-mono text-[11px] font-black flex-shrink-0 border-2 transition-colors"
         style={{
           background: track.color + "18",
           color: track.color,
@@ -187,14 +202,20 @@ function TrackRailItem({ track, courses, selected, onSelect }: {
         </div>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 h-[3px] bg-white/[0.06] overflow-hidden">
-            <div className="h-full" style={{ width: `${progress}%`, background: track.color }} />
+            <motion.div
+              className="h-full"
+              style={{ background: track.color }}
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={tx(DUR.slow)}
+            />
           </div>
           <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/40 tabular-nums flex-shrink-0">
             {done}/{tc.length}
           </span>
         </div>
       </div>
-    </button>
+    </motion.button>
   );
 }
 
@@ -234,12 +255,17 @@ function StationRow({ c, n, selected, onSelect, trackColor, isLast }: {
       </div>
 
       {/* Course card */}
-      <button
+      <motion.button
         onClick={onSelect}
-        className={`flex-1 min-w-0 my-1.5 text-left px-3 py-2.5 border-2 transition flex items-start gap-2.5 ${
-          selected ? "bg-white/[0.04]" : "bg-[#0F1011] hover:bg-white/[0.02]"
-        }`}
+        whileHover={
+          selected
+            ? { boxShadow: `4px 4px 0 0 ${G}66` }
+            : { boxShadow: "3px 3px 0 0 rgba(255,255,255,0.10)", backgroundColor: "rgba(255,255,255,0.04)" }
+        }
+        transition={tx(DUR.fast)}
+        className="flex-1 min-w-0 my-1.5 text-left px-3 py-2.5 border-2 flex items-start gap-2.5"
         style={{
+          background: selected ? "rgba(255,255,255,0.04)" : "#0F1011",
           borderColor: selected ? G_LINE : "rgba(255,255,255,0.07)",
           boxShadow: selected ? `3px 3px 0 0 ${G}55` : "none",
         }}
@@ -263,16 +289,18 @@ function StationRow({ c, n, selected, onSelect, trackColor, isLast }: {
             <span>{c.estimatedHours}ч</span>
           </div>
           <div className="mt-1.5 h-[3px] bg-white/[0.06] overflow-hidden">
-            <div
+            <motion.div
               className="h-full"
               style={{
-                width: `${c.progress}%`,
                 background: c.progress === 100 ? "#10B981" : `linear-gradient(90deg, ${G}, ${G_DEEP})`,
               }}
+              initial={{ width: 0 }}
+              animate={{ width: `${c.progress}%` }}
+              transition={tx(DUR.slow)}
             />
           </div>
         </div>
-      </button>
+      </motion.button>
     </div>
   );
 }
@@ -280,6 +308,9 @@ function StationRow({ c, n, selected, onSelect, trackColor, isLast }: {
 /* ── Course Spread ────────────────────────────────────── */
 function CourseSpread({ courseId, onStart }: { courseId: string; onStart: (id: string) => void }) {
   const { data: course, isLoading } = useSWR<CourseDetail>(`/api/courses/${courseId}`, fetcher);
+  // Hooks must come before any early return — useCountUp falls back to 0
+  // when no course is loaded yet.
+  const progressDisplay = useCountUp(course?.progress ?? 0);
 
   if (isLoading || !course) {
     return (
@@ -326,26 +357,32 @@ function CourseSpread({ courseId, onStart }: { courseId: string; onStart: (id: s
               <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/30">Прогресс</div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-4xl font-black tabular-nums" style={{ color: G }}>
-                  {course.progress}
+                  {progressDisplay}
                 </span>
                 <span className="font-mono text-[14px] text-white/30">%</span>
               </div>
               <div className="mt-2 h-1.5 bg-white/[0.06] overflow-hidden">
-                <div
+                <motion.div
                   className="h-full"
-                  style={{ width: `${course.progress}%`, background: `linear-gradient(90deg, ${G}, ${G_DEEP})` }}
+                  style={{ background: `linear-gradient(90deg, ${G}, ${G_DEEP})` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${course.progress}%` }}
+                  transition={tx(DUR.slow)}
                 />
               </div>
               <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-white/45">
                 <span className="text-white/80">{done}</span> / {total} уроков
               </div>
-              <button
+              <motion.button
                 onClick={() => onStart(course.id)}
+                whileHover={{ x: -2, y: -2, boxShadow: `5px 5px 0 0 ${G}AA` }}
+                whileTap={{ x: 0, y: 0, boxShadow: `1px 1px 0 0 ${G}66` }}
+                transition={tx(DUR.fast)}
                 className="mt-3 w-full py-2.5 font-mono text-[11px] uppercase tracking-[0.15em] font-bold text-black"
                 style={{ background: G, boxShadow: `3px 3px 0 0 ${G}66` }}
               >
                 {course.progress > 0 ? "Продолжить" : "Начать курс"}
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
@@ -413,6 +450,8 @@ interface CoursesSectionProps {
 export function CoursesSection({ courses, loading, onSelectCourse }: CoursesSectionProps) {
   const [trackId, setTrackId] = useState("frontend");
   const [selected, setSelected] = useState<string | null>(null);
+  const reduced = useReducedMotion();
+  const hasMountedRef = useRef(false);
 
   const track = TRACKS.find((t) => t.id === trackId) ?? TRACKS[0];
 
@@ -428,6 +467,11 @@ export function CoursesSection({ courses, loading, onSelectCourse }: CoursesSect
     setSelected((inProg ?? tc[0]).id);
   }, [trackId, tc.length]);
 
+  // Stat count-up (target=0 until courses load, then animates up to actual)
+  const tracksCount    = useCountUp(courses ? TRACKS.length - 1 : 0);
+  const coursesCount   = useCountUp(courses?.length ?? 0);
+  const completedCount = useCountUp(courses?.filter((c) => c.progress === 100).length ?? 0);
+
   if (loading || !courses) return <CoursesSkeleton />;
 
   const effectiveSelected = selected ?? tc[0]?.id ?? courses[0]?.id;
@@ -437,10 +481,27 @@ export function CoursesSection({ courses, loading, onSelectCourse }: CoursesSect
   const done = tc.filter((c) => c.progress === 100).length;
   const totalHours = tc.reduce((s, c) => s + c.estimatedHours, 0);
 
+  // Once mounted, hold a flag so HMR / re-renders do not replay the cascade.
+  // We can't put this in useEffect because we want it to apply on first render.
+  const isFirstMount = !hasMountedRef.current;
+  if (isFirstMount) hasMountedRef.current = true;
+
+  // Variant pick — reduced motion swaps everything to a no-op
+  const v = (key: keyof typeof variants) => (reduced ? variantsStill : variants[key]);
+
   return (
-    <div className="w-full p-1">
+    <motion.div
+      className="w-full p-1"
+      variants={reduced ? undefined : stagger.page}
+      initial={isFirstMount ? "hidden" : false}
+      animate="show"
+    >
       {/* Header */}
-      <div className="flex items-end justify-between mb-4">
+      <motion.div
+        variants={v("fadeUp")}
+        transition={tx()}
+        className="flex items-end justify-between mb-4"
+      >
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-white/30">
             Learn · Atlas / Tracks
@@ -454,14 +515,14 @@ export function CoursesSection({ courses, loading, onSelectCourse }: CoursesSect
           <div>
             <div className="text-white/30">треков</div>
             <div className="text-white text-[22px] font-black tabular-nums leading-none mt-0.5">
-              {TRACKS.length - 1}
+              {tracksCount}
             </div>
           </div>
           <div className="w-px h-8 bg-white/10" />
           <div>
             <div className="text-white/30">курсов</div>
             <div className="text-white text-[22px] font-black tabular-nums leading-none mt-0.5">
-              {courses.length}
+              {coursesCount}
             </div>
           </div>
           <div className="w-px h-8 bg-white/10" />
@@ -471,115 +532,155 @@ export function CoursesSection({ courses, loading, onSelectCourse }: CoursesSect
               className="text-[22px] font-black tabular-nums leading-none mt-0.5"
               style={{ color: G }}
             >
-              {courses.filter((c) => c.progress === 100).length}
+              {completedCount}
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 3-column grid */}
       <div className="grid gap-4" style={{ gridTemplateColumns: "260px 380px 1fr" }}>
         {/* ── Tracks rail ── */}
-        <Card shadow={false} className="h-fit">
-          <div className="px-4 pt-4 pb-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white font-bold">
-              Карьерные треки
+        <motion.div variants={v("slideRight")} transition={tx()}>
+          <Card shadow={false} className="h-fit">
+            <div className="px-4 pt-4 pb-2">
+              <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-white font-bold">
+                Карьерные треки
+              </div>
+              <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
+                выберите направление
+              </div>
             </div>
-            <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
-              выберите направление
+            <div className="divide-y divide-white/[0.04]">
+              {TRACKS.map((t) => (
+                <TrackRailItem
+                  key={t.id}
+                  track={t}
+                  courses={courses}
+                  selected={trackId === t.id}
+                  onSelect={() => setTrackId(t.id)}
+                />
+              ))}
             </div>
-          </div>
-          <div className="divide-y divide-white/[0.04]">
-            {TRACKS.map((t) => (
-              <TrackRailItem
-                key={t.id}
-                track={t}
-                courses={courses}
-                selected={trackId === t.id}
-                onSelect={() => setTrackId(t.id)}
-              />
-            ))}
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
 
         {/* ── Track stations ── */}
-        <Card shadow={false} className="h-fit">
-          {/* Track header */}
-          <div className="px-5 py-4 border-b-2 border-white/[0.05]">
-            <div className="flex items-start gap-3">
-              <div
-                className="size-10 flex items-center justify-center font-mono text-[13px] font-black flex-shrink-0 border-2"
-                style={{
-                  background: track.color + "18",
-                  color: track.color,
-                  borderColor: track.color + "50",
-                }}
+        <motion.div variants={v("fadeUp")} transition={tx()}>
+          <Card shadow={false} className="h-fit">
+            {/* Track header — cross-fades on track change */}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={trackId}
+                variants={v("fadeIn")}
+                initial="hidden"
+                animate="show"
+                exit="hidden"
+                transition={tx(DUR.fast)}
+                className="px-5 py-4 border-b-2 border-white/[0.05]"
               >
-                {track.id === "all" ? "★" : track.id.slice(0, 2).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div
-                  className="font-mono text-[10px] uppercase tracking-[0.25em]"
-                  style={{ color: track.color }}
-                >
-                  {track.id === "all" ? "каталог" : "трек"}
+                <div className="flex items-start gap-3">
+                  <div
+                    className="size-10 flex items-center justify-center font-mono text-[13px] font-black flex-shrink-0 border-2"
+                    style={{
+                      background: track.color + "18",
+                      color: track.color,
+                      borderColor: track.color + "50",
+                    }}
+                  >
+                    {track.id === "all" ? "★" : track.id.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="font-mono text-[10px] uppercase tracking-[0.25em]"
+                      style={{ color: track.color }}
+                    >
+                      {track.id === "all" ? "каталог" : "трек"}
+                    </div>
+                    <h2 className="mt-0.5 text-white text-[18px] font-bold tracking-tight leading-tight">
+                      {track.title}
+                    </h2>
+                    <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40">
+                      {track.subtitle}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30">Прогресс</div>
+                    <div
+                      className="mt-0.5 font-mono text-[20px] font-black tabular-nums leading-none"
+                      style={{ color: track.color }}
+                    >
+                      {trackProgress}
+                      <span className="text-[11px] text-white/25">%</span>
+                    </div>
+                  </div>
                 </div>
-                <h2 className="mt-0.5 text-white text-[18px] font-bold tracking-tight leading-tight">
-                  {track.title}
-                </h2>
-                <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/40">
-                  {track.subtitle}
+                <div className="mt-3 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.15em] text-white/45">
+                  <span>{tc.length} курсов</span>
+                  <span className="text-white/15">·</span>
+                  <span style={{ color: "#10B981" }}>{done} завершено</span>
+                  <span className="text-white/15">·</span>
+                  <span>{totalHours} ч</span>
                 </div>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30">Прогресс</div>
-                <div
-                  className="mt-0.5 font-mono text-[20px] font-black tabular-nums leading-none"
-                  style={{ color: track.color }}
-                >
-                  {trackProgress}
-                  <span className="text-[11px] text-white/25">%</span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.15em] text-white/45">
-              <span>{tc.length} курсов</span>
-              <span className="text-white/15">·</span>
-              <span style={{ color: "#10B981" }}>{done} завершено</span>
-              <span className="text-white/15">·</span>
-              <span>{totalHours} ч</span>
-            </div>
-          </div>
+              </motion.div>
+            </AnimatePresence>
 
-          {/* Station list */}
-          <div className="px-4 py-2 max-h-[700px] overflow-auto">
-            {tc.length === 0 ? (
-              <div className="py-8 text-center font-mono text-[11px] uppercase tracking-[0.15em] text-white/25">
-                Нет курсов в этом треке
-              </div>
-            ) : (
-              tc.map((c, i) => (
-                <StationRow
-                  key={c.id}
-                  c={c}
-                  n={i + 1}
-                  selected={c.id === effectiveSelected}
-                  onSelect={() => setSelected(c.id)}
-                  trackColor={track.color}
-                  isLast={i === tc.length - 1}
-                />
-              ))
+            {/* Station list — re-staggers on track change */}
+            <div className="px-4 py-2 max-h-[700px] overflow-auto">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={trackId}
+                  variants={reduced ? undefined : stagger.list}
+                  initial="hidden"
+                  animate="show"
+                  exit="hidden"
+                >
+                  {tc.length === 0 ? (
+                    <div className="py-8 text-center font-mono text-[11px] uppercase tracking-[0.15em] text-white/25">
+                      Нет курсов в этом треке
+                    </div>
+                  ) : (
+                    tc.map((c, i) => (
+                      <motion.div
+                        key={c.id}
+                        variants={v("fadeUp")}
+                        transition={tx(DUR.fast)}
+                      >
+                        <StationRow
+                          c={c}
+                          n={i + 1}
+                          selected={c.id === effectiveSelected}
+                          onSelect={() => setSelected(c.id)}
+                          trackColor={track.color}
+                          isLast={i === tc.length - 1}
+                        />
+                      </motion.div>
+                    ))
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* ── Spread — cross-fades on course change ── */}
+        <motion.div variants={v("fadeUp")} transition={tx(DUR.normal, 0.15)}>
+          <AnimatePresence mode="wait" initial={false}>
+            {effectiveSelected && (
+              <motion.div
+                key={effectiveSelected}
+                variants={v("fadeUp")}
+                initial="hidden"
+                animate="show"
+                exit="hidden"
+                transition={tx()}
+              >
+                <CourseSpread courseId={effectiveSelected} onStart={onSelectCourse} />
+              </motion.div>
             )}
-          </div>
-        </Card>
-
-        {/* ── Spread ── */}
-        <div>
-          {effectiveSelected && (
-            <CourseSpread courseId={effectiveSelected} onStart={onSelectCourse} />
-          )}
-        </div>
+          </AnimatePresence>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
