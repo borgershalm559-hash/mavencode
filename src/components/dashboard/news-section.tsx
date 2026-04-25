@@ -19,9 +19,9 @@ const G_LINE = "rgba(16,185,129,0.28)";
 type CatKey = "Обновление" | "Событие" | "Объявление";
 
 const CATEGORY_HEX: Record<CatKey, { main: string; soft: string; line: string; label: string }> = {
-  "Обновление": { main: "#60A5FA", soft: "rgba(96,165,250,0.10)",  line: "rgba(96,165,250,0.28)",  label: "UPD" },
-  "Событие":    { main: "#34D399", soft: "rgba(52,211,153,0.10)",  line: "rgba(52,211,153,0.28)",  label: "EVT" },
-  "Объявление": { main: "#C4B5FD", soft: "rgba(196,181,253,0.10)", line: "rgba(196,181,253,0.30)", label: "NTC" },
+  "Обновление": { main: "#60A5FA", soft: "rgba(96,165,250,0.10)",  line: "rgba(96,165,250,0.28)",  label: "ОБН" },
+  "Событие":    { main: "#34D399", soft: "rgba(52,211,153,0.10)",  line: "rgba(52,211,153,0.28)",  label: "СОБ" },
+  "Объявление": { main: "#C4B5FD", soft: "rgba(196,181,253,0.10)", line: "rgba(196,181,253,0.30)", label: "АНО" },
 };
 
 /* ── Date helpers ─────────────────────────────────────── */
@@ -151,7 +151,7 @@ function TimelineCard({ n, first, last, onRead }: {
         {/* Commit header */}
         <div className="flex items-center gap-2 px-4 py-2 border-b border-white/[0.08] bg-black/30">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: c.main }}>
-            commit
+            запись
           </span>
           <span className="font-mono text-[11px] text-white/45 tabular-nums truncate">{commitHash}</span>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.22em] text-white/35 flex-shrink-0">
@@ -286,7 +286,7 @@ export function NewsSection({ news, loading, selectedNews, onSelectNews, onBack 
         <div className="flex items-end justify-between pb-5 border-b-2 border-white/10 mb-2">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] font-bold mb-2" style={{ color: G }}>
-              /news · changelog
+              /новости · хроника
             </div>
             <h1 className="text-white font-black leading-none" style={{ fontSize: 52, letterSpacing: "-0.035em" }}>
               Новости<span style={{ color: G }}>.</span>
@@ -307,7 +307,7 @@ export function NewsSection({ news, loading, selectedNews, onSelectNews, onBack 
 
         {/* Filter strip */}
         <div className="flex items-center gap-2 py-4 border-b border-white/[0.08] flex-wrap">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/35 mr-1">filter</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/35 mr-1">фильтр</span>
           {["Все", ...Object.keys(CATEGORY_HEX)].map((cat) => {
             const active = activeFilter === cat;
             const c = CATEGORY_HEX[cat as CatKey];
@@ -549,11 +549,11 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
 
   const stats: { k: string; v: string; accent?: boolean }[] = [
     { k: "ID", v: item.id.toUpperCase() },
-    { k: "RUBRIC", v: c.label },
-    { k: "DATE", v: dateDisplay },
-    { k: "READ", v: `~${minutes} MIN` },
-    { k: "WORDS", v: String(wordCount) },
-    { k: "STATUS", v: item.pinned ? "PINNED" : "PUBLISHED", accent: item.pinned },
+    { k: "Рубрика", v: c.label },
+    { k: "Дата", v: dateDisplay },
+    { k: "Чтение", v: `~${minutes} мин` },
+    { k: "Слов", v: String(wordCount) },
+    { k: "Статус", v: item.pinned ? "Закреплено" : "Опубликовано", accent: item.pinned },
   ];
 
   return (
@@ -603,17 +603,17 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
         </button>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <ActionButton onClick={handleShare} icon={<Share2 size={12} />} label="share" />
+          <ActionButton onClick={handleShare} icon={<Share2 size={12} />} label="поделиться" />
           <ActionButton
             onClick={() => setBookmarked((b) => !b)}
             icon={<Bookmark size={12} fill={bookmarked ? G : "none"} stroke={bookmarked ? G : "currentColor"} />}
-            label="bookmark"
+            label="в закладки"
             on={bookmarked}
           />
           <ActionButton
             onClick={handleCopyLink}
             icon={copied ? <Check size={12} /> : <LinkIcon size={12} />}
-            label={copied ? "copied" : "copy link"}
+            label={copied ? "скопировано" : "копировать"}
             on={copied}
           />
         </div>
@@ -719,7 +719,7 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
               marginBottom: 14,
             }}
           >
-            /news · dossier #{item.id.toUpperCase()}
+            /новости · досье #{item.id.toUpperCase()}
           </div>
           <h1
             style={{
@@ -869,7 +869,7 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
                   color: "rgba(255,255,255,0.6)",
                 }}
               >
-                <span>fig. 01 · {item.id}</span>
+                <span>рис. 01 · {item.id}</span>
                 <span>{c.label}</span>
               </div>
               {!item.imageUrl && (
@@ -943,7 +943,7 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
                     textTransform: "uppercase",
                   }}
                 >
-                  <span style={{ color: G, fontWeight: 700 }}>tl;dr</span>
+                  <span style={{ color: G, fontWeight: 700 }}>вкратце</span>
                   <span style={{ color: "rgba(255,255,255,0.35)" }}>
                     {highlights.length} {highlights.length === 1 ? "пункт" : highlights.length < 5 ? "пункта" : "пунктов"}
                   </span>
@@ -1074,9 +1074,9 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
           gap: 12,
         }}
       >
-        <span>MavenCode · news/dossier</span>
+        <span>MavenCode · новости/досье</span>
         <span>{item.id.toUpperCase()} · {dateDisplay}</span>
-        <span>v1 · the dossier</span>
+        <span>v1 · досье</span>
       </div>
     </div>
   );
