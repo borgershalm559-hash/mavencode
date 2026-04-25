@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed:html-101":      "npx tsx prisma/seed-html-101.ts",
-    "seed:html-101-news": "npx tsx prisma/seed-html-101-news.ts"
+    "seed:html-101-news": "npx tsx prisma/seed-html-101-news.ts",
+    "seed:html-102":      "npx tsx prisma/seed-html-102.ts",
+    "seed:html-102-news": "npx tsx prisma/seed-html-102-news.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
