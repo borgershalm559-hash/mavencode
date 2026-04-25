@@ -160,6 +160,13 @@ textarea:disabled {
   color: #000000;
 }
 
+/* Disable resize handles on all native elements (textareas, etc.) */
+textarea,
+pre,
+.monaco-editor textarea {
+  resize: none !important;
+}
+
 /* Custom scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
