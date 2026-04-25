@@ -84,7 +84,7 @@ export function Sidebar({ active, onNavigate, profile, collapsed, onToggle }: Si
 
       {/* ── Navigation ── */}
       <nav
-        className="flex-1 space-y-1.5 overflow-y-auto"
+        className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden custom-scrollbar"
         style={{ padding: collapsed ? "12px 6px 0" : "0 12px" }}
       >
         {sections.map((s, i) => {
@@ -160,15 +160,27 @@ export function Sidebar({ active, onNavigate, profile, collapsed, onToggle }: Si
       </nav>
 
       {/* ── User + XP ── */}
-      <div className="border-t-2 border-white/10 p-3 flex-shrink-0">
+      <div
+        className="border-t-2 border-white/10 flex-shrink-0 overflow-hidden"
+        style={{ padding: collapsed ? "8px" : "12px" }}
+      >
         <button
           onClick={() => onNavigate("profile")}
-          className="w-full flex items-center gap-2.5 p-2 border-2 border-white/10 hover:border-white/20 transition-colors duration-150"
+          className="w-full flex items-center gap-2.5 border-2 border-white/10 hover:border-white/20 transition-colors duration-150 min-w-0 overflow-hidden"
+          style={{
+            padding: collapsed ? "4px" : "8px",
+            justifyContent: collapsed ? "center" : undefined,
+          }}
         >
           {/* Pixel avatar */}
           <div
-            className="size-9 flex-shrink-0 grid place-items-center overflow-hidden"
-            style={{ background: GREEN_SOFT, border: `2px solid ${GREEN_LINE}` }}
+            className="flex-shrink-0 grid place-items-center overflow-hidden"
+            style={{
+              width: collapsed ? 32 : 36,
+              height: collapsed ? 32 : 36,
+              background: GREEN_SOFT,
+              border: `2px solid ${GREEN_LINE}`,
+            }}
           >
             {profile?.image ? (
               <img src={profile.image} alt="" className="size-full object-cover" />
