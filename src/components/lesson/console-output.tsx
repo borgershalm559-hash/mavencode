@@ -31,9 +31,18 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
   };
 
   return (
-    <div style={{ borderTop: "2px solid rgba(255,255,255,0.07)", background: "#101013" }}>
+    <div
+      style={{
+        borderTop: "2px solid rgba(255,255,255,0.07)",
+        background: "#101013",
+        maxHeight: 240,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+      }}
+    >
       {/* Tab bar */}
-      <div style={{ display: "flex", gap: 6, padding: "10px 18px 0" }}>
+      <div style={{ display: "flex", gap: 6, padding: "10px 18px 0", flexShrink: 0 }}>
         <button
           onClick={() => setTab("tests")}
           style={{
@@ -74,7 +83,10 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
       </div>
 
       {/* Content */}
-      <div style={{ borderTop: "2px solid rgba(255,255,255,0.07)" }}>
+      <div
+        style={{ borderTop: "2px solid rgba(255,255,255,0.07)", overflowY: "auto", flex: 1, minHeight: 0 }}
+        className="custom-scrollbar"
+      >
         <AnimatePresence mode="wait">
           {isRunning ? (
             <motion.div

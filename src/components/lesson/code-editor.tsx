@@ -164,7 +164,7 @@ export function CodeEditor({
       </div>
 
       {/* Editor — row 2 of grid (1fr) */}
-      <div style={{ minHeight: 460, position: "relative" }}>
+      <div style={{ minHeight: 0, position: "relative", overflow: "hidden" }}>
         <MonacoEditor
           height="100%"
           language={monacoLanguage}

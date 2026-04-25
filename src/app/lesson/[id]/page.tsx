@@ -251,9 +251,12 @@ export default function LessonPage({
   const nextLessonTitle = data.nextLesson?.title ?? null;
 
   return (
-    <div style={{ background: "#0B0B0C", color: "#EDEDED", minHeight: "100vh" }}>
+    <div
+      style={{ background: "#0B0B0C", color: "#EDEDED" }}
+      className="flex flex-col h-screen overflow-hidden"
+    >
       {/* Top 3px accent stripe */}
-      <div style={{ height: 3, background: "#10B981" }} />
+      <div style={{ height: 3, background: "#10B981" }} className="shrink-0" />
 
       {/* Header */}
       <LessonHeader
@@ -285,17 +288,19 @@ export default function LessonPage({
         courseTitle={data.course.title}
       />
 
-      {/* Main split — 50/50 grid, page scrolls */}
+      {/* Main split — 50/50 grid, fills remaining viewport, panels scroll internally */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          minHeight: 760,
         }}
-        className="lesson-main-split"
+        className="lesson-main-split flex-1 min-h-0"
       >
-        {/* LEFT — Theory */}
-        <div style={{ borderRight: "2px solid rgba(255,255,255,0.07)" }}>
+        {/* LEFT — Theory (scrolls internally) */}
+        <div
+          style={{ borderRight: "2px solid rgba(255,255,255,0.07)" }}
+          className="overflow-y-auto custom-scrollbar min-h-0"
+        >
           <TheoryPanel content={data.lesson.content} />
         </div>
 
@@ -304,9 +309,9 @@ export default function LessonPage({
           style={{
             display: "grid",
             gridTemplateRows: "auto 1fr auto",
-            minHeight: 0,
             background: "#0E0E10",
           }}
+          className="min-h-0 overflow-hidden"
         >
           {isQuiz ? (
             <div style={{ gridRow: "1 / span 3" }}>
