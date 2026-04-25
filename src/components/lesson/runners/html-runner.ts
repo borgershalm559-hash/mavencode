@@ -6,16 +6,32 @@ function isHtmlAssertion(t: Test): t is HtmlAssertion {
 
 function describeExpected(a: HtmlAssertion): string {
   switch (a.kind) {
-    case "exists":       return `${a.selector} существует`;
-    case "count":        return `${a.selector} × ${a.n}`;
-    case "text":         return `${a.selector} = "${a.equals}"`;
-    case "textContains": return `${a.selector} ⊃ "${a.contains}"`;
-    case "attr":         return `${a.selector}[${a.name}="${a.equals}"]`;
-    case "attrExists":   return `${a.selector}[${a.name}]`;
+    case "exists":        return `${a.selector} существует`;
+    case "count":         return `${a.selector} × ${a.n}`;
+    case "text":          return `${a.selector} = "${a.equals}"`;
+    case "textContains":  return `${a.selector} ⊃ "${a.contains}"`;
+    case "attr":          return `${a.selector}[${a.name}="${a.equals}"]`;
+    case "attrExists":    return `${a.selector}[${a.name}]`;
+    case "style":         return `${a.selector} { ${a.property}: ${a.equals} }`;
+    case "styleContains": return `${a.selector} { ${a.property}: ⊃${a.contains} }`;
   }
 }
 
-function runAssertion(doc: Document, a: HtmlAssertion): { passed: boolean; actual: string } {
+/**
+ * Normalize a CSS value for comparison. Computed style returns rgb()/rgba()
+ * for colors; raw inputs may be hex, named, or rgb. We normalize both sides
+ * by parsing with the browser's CSS parser via a temp element.
+ */
+function normalizeCssValue(window: Window, doc: Document, property: string, value: string): string {
+  const probe = doc.createElement("span");
+  probe.style.setProperty(property, value);
+  doc.body.appendChild(probe);
+  const computed = window.getComputedStyle(probe).getPropertyValue(property).trim();
+  probe.remove();
+  return computed;
+}
+
+function runAssertion(window: Window, doc: Document, a: HtmlAssertion): { passed: boolean; actual: string } {
   switch (a.kind) {
     case "exists": {
       const el = doc.querySelector(a.selector);
@@ -43,6 +59,25 @@ function runAssertion(doc: Document, a: HtmlAssertion): { passed: boolean; actua
     case "attrExists": {
       const el = doc.querySelector(a.selector);
       return { passed: !!el?.hasAttribute(a.name), actual: el ? (el.hasAttribute(a.name) ? "есть" : "нет атрибута") : "не найден" };
+    }
+    case "style": {
+      const el = doc.querySelector(a.selector);
+      if (!el) return { passed: false, actual: "не найден" };
+      const actualComputed = window.getComputedStyle(el).getPropertyValue(a.property).trim();
+      const expectedComputed = normalizeCssValue(window, doc, a.property, a.equals);
+      return {
+        passed: actualComputed === expectedComputed,
+        actual: actualComputed || "(пусто)",
+      };
+    }
+    case "styleContains": {
+      const el = doc.querySelector(a.selector);
+      if (!el) return { passed: false, actual: "не найден" };
+      const actualComputed = window.getComputedStyle(el).getPropertyValue(a.property).trim();
+      return {
+        passed: actualComputed.toLowerCase().includes(a.contains.toLowerCase()),
+        actual: actualComputed || "(пусто)",
+      };
     }
   }
 }
@@ -104,8 +139,23 @@ export class HtmlRunner implements CodeRunner {
             return;
           }
 
+          const win = iframe.contentWindow;
+          if (!win) {
+            finish({
+              output: "",
+              error: "Не удалось получить окно превью.",
+              tests: assertions.map((a) => ({
+                description: a.description,
+                passed: false,
+                expected: describeExpected(a),
+                actual: "—",
+              })),
+            });
+            return;
+          }
+
           const results: TestResult[] = assertions.map((a) => {
-            const { passed, actual } = runAssertion(doc, a);
+            const { passed, actual } = runAssertion(win, doc, a);
             return {
               description: a.description,
               passed,
