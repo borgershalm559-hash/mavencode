@@ -97,51 +97,51 @@ export function Sidebar({ active, onNavigate, profile, collapsed, onToggle }: Si
             <div key={s.key} className="relative group/nav">
               <button
                 onClick={() => onNavigate(s.key)}
-                className="w-full text-left flex items-center gap-3 px-3 py-3 border-2 transition-all duration-150"
+                className="w-full text-left flex items-center border-2 transition-all duration-150 overflow-hidden"
                 style={{
                   background:   isActive ? GREEN : "transparent",
                   borderColor:  isActive ? GREEN : "rgba(255,255,255,0.08)",
                   boxShadow:    isActive ? `4px 4px 0 0 ${GREEN}55` : "none",
                   color:        isActive ? "#000" : "rgba(255,255,255,0.7)",
+                  padding:      collapsed ? "10px 0" : "12px",
+                  gap:          collapsed ? 0 : 12,
+                  justifyContent: collapsed ? "center" : undefined,
                 }}
               >
-                {/* Number */}
-                <span
-                  className="font-mono text-[10px] font-black tabular-nums w-6 flex-shrink-0"
-                  style={{ color: isActive ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.3)" }}
-                >
-                  {n}
-                </span>
-
-                {/* Icon */}
-                <Icon className="size-[17px] flex-shrink-0" />
-
-                {/* Label */}
-                <AnimatePresence>
-                  {!collapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.15 }}
-                      className="flex-1 font-mono text-[12px] font-bold uppercase tracking-[0.18em] overflow-hidden whitespace-nowrap"
+                {collapsed ? (
+                  /* Collapsed: only the icon, centered */
+                  <Icon className="size-[18px] flex-shrink-0" />
+                ) : (
+                  <>
+                    {/* Number */}
+                    <span
+                      className="font-mono text-[10px] font-black tabular-nums w-6 flex-shrink-0"
+                      style={{ color: isActive ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.3)" }}
                     >
-                      {s.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                      {n}
+                    </span>
 
-                {/* Badge */}
-                {badge && !collapsed && (
-                  <span
-                    className="font-mono text-[9px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5 border-2 flex-shrink-0"
-                    style={isActive
-                      ? { borderColor: "rgba(0,0,0,0.4)", color: "#000" }
-                      : { color: GREEN, borderColor: GREEN_LINE, background: GREEN_SOFT }
-                    }
-                  >
-                    {badge}
-                  </span>
+                    {/* Icon */}
+                    <Icon className="size-[17px] flex-shrink-0" />
+
+                    {/* Label */}
+                    <span className="flex-1 font-mono text-[12px] font-bold uppercase tracking-[0.18em] overflow-hidden whitespace-nowrap">
+                      {s.label}
+                    </span>
+
+                    {/* Badge */}
+                    {badge && (
+                      <span
+                        className="font-mono text-[9px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5 border-2 flex-shrink-0"
+                        style={isActive
+                          ? { borderColor: "rgba(0,0,0,0.4)", color: "#000" }
+                          : { color: GREEN, borderColor: GREEN_LINE, background: GREEN_SOFT }
+                        }
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </>
                 )}
               </button>
 
