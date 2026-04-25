@@ -8,8 +8,8 @@ import { onPyodideLoadingStatus, type PyodideLoadingStatus } from "./runners/pyt
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full" style={{ background: "#0E0E10" }}>
-      <Loader2 className="w-5 h-5 text-white/15 animate-spin" />
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", background: "#0E0E10" }}>
+      <Loader2 size={20} className="animate-spin" style={{ color: "rgba(255,255,255,0.15)" }} />
     </div>
   ),
 });
@@ -56,8 +56,9 @@ export function CodeEditor({
   }, []);
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#0E0E10" }}>
-      {/* Toolbar */}
+    <>
+      {/* Toolbar + optional pyodide banner — single grid row */}
+      <div>
       <div
         style={{
           display: "flex",
@@ -68,7 +69,6 @@ export function CodeEditor({
           borderBottom: "2px solid rgba(255,255,255,0.07)",
         }}
       >
-        {/* Left: traffic lights + filename */}
         <div
           className="font-mono"
           style={{
@@ -81,17 +81,16 @@ export function CodeEditor({
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          {/* macOS squares — no border-radius */}
           <span style={{ width: 8, height: 8, background: "#FF5F56", display: "inline-block" }} />
           <span style={{ width: 8, height: 8, background: "#FFBD2E", display: "inline-block" }} />
           <span style={{ width: 8, height: 8, background: "#27C93F", display: "inline-block" }} />
           <span style={{ marginLeft: 14 }}>{filename}</span>
         </div>
 
-        {/* Right: reset + run */}
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={onReset}
+            className="font-mono"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -100,7 +99,6 @@ export function CodeEditor({
               border: "2px solid transparent",
               background: "transparent",
               color: "rgba(255,255,255,0.45)",
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
               fontSize: 11,
               letterSpacing: "0.1em",
               cursor: "pointer",
@@ -112,6 +110,7 @@ export function CodeEditor({
           <button
             onClick={onRun}
             disabled={isRunning}
+            className="font-mono"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -120,7 +119,6 @@ export function CodeEditor({
               border: "2px solid #0B0B0C",
               background: "#10B981",
               color: "#0B0B0C",
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
               fontSize: 11,
               fontWeight: 600,
               letterSpacing: "0.18em",
@@ -134,7 +132,7 @@ export function CodeEditor({
               <Loader2 size={12} className="animate-spin" />
             ) : (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="#0B0B0C">
-                <polygon points="5,3 19,12 5,21"/>
+                <polygon points="5,3 19,12 5,21" />
               </svg>
             )}
             {isRunning ? "Выполняю..." : "Запустить"}
@@ -163,9 +161,10 @@ export function CodeEditor({
           Загрузка Python (~50 MB)...
         </div>
       )}
+      </div>
 
-      {/* Editor */}
-      <div className="flex-1 min-h-0">
+      {/* Editor — row 2 of grid (1fr) */}
+      <div style={{ minHeight: 460, position: "relative" }}>
         <MonacoEditor
           height="100%"
           language={monacoLanguage}
@@ -189,9 +188,10 @@ export function CodeEditor({
             wordWrap: "on",
             readOnly,
             contextmenu: false,
+            automaticLayout: true,
           }}
         />
       </div>
-    </div>
+    </>
   );
 }

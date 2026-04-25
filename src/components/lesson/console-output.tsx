@@ -31,10 +31,7 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
   };
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ borderTop: "2px solid rgba(255,255,255,0.07)", background: "#101013" }}
-    >
+    <div style={{ borderTop: "2px solid rgba(255,255,255,0.07)", background: "#101013" }}>
       {/* Tab bar */}
       <div style={{ display: "flex", gap: 6, padding: "10px 18px 0" }}>
         <button
@@ -48,16 +45,11 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
           }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />
           </svg>
           Тесты
           {result && (
-            <span
-              style={{
-                color: allPassed ? "#10B981" : "#F87171",
-                fontWeight: 600,
-              }}
-            >
+            <span style={{ color: allPassed ? "#10B981" : "#F87171", fontWeight: 600 }}>
               {passedCount}/{totalCount}
             </span>
           )}
@@ -74,17 +66,15 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
           }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+            <polyline points="4 17 10 11 4 5" />
+            <line x1="12" y1="19" x2="20" y2="19" />
           </svg>
           Вывод
         </button>
       </div>
 
       {/* Content */}
-      <div
-        className="flex-1 overflow-y-auto custom-scrollbar"
-        style={{ borderTop: "2px solid rgba(255,255,255,0.07)" }}
-      >
+      <div style={{ borderTop: "2px solid rgba(255,255,255,0.07)" }}>
         <AnimatePresence mode="wait">
           {isRunning ? (
             <motion.div
@@ -104,7 +94,13 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="font-mono"
-              style={{ padding: "14px 22px", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)" }}
+              style={{
+                padding: "14px 22px",
+                fontSize: 11,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.25)",
+              }}
             >
               Нажмите «Запустить» для выполнения
             </motion.div>
@@ -144,28 +140,23 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
                     background: test.passed ? "rgba(16,185,129,0.05)" : "rgba(248,113,113,0.05)",
                   }}
                 >
-                  {/* Status icon */}
-                  <span style={{ color: test.passed ? "#10B981" : "#F87171" }}>
+                  <span style={{ color: test.passed ? "#10B981" : "#F87171", display: "inline-flex" }}>
                     {test.passed ? (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="20 6 9 17 4 12"/>
+                        <polyline points="20 6 9 17 4 12" />
                       </svg>
                     ) : (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
                     )}
                   </span>
 
-                  {/* Description */}
-                  <span
-                    className="font-mono"
-                    style={{ fontSize: 12, color: "rgba(255,255,255,0.78)" }}
-                  >
+                  <span className="font-mono" style={{ fontSize: 12, color: "rgba(255,255,255,0.78)" }}>
                     {test.description}
                   </span>
 
-                  {/* Expected value */}
                   {test.expected && (
                     <span
                       className="font-mono"
@@ -209,7 +200,7 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
               key="output"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ padding: "14px 22px" }}
+              style={{ padding: "14px 22px 22px" }}
             >
               {result.error && (
                 <div className="font-mono" style={{ fontSize: 12, color: "#F87171", marginBottom: 8 }}>
@@ -226,7 +217,7 @@ export function ConsoleOutput({ result, isRunning }: ConsoleOutputProps) {
               ) : (
                 <span
                   className="font-mono"
-                  style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)" }}
+                  style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}
                 >
                   Нет вывода
                 </span>

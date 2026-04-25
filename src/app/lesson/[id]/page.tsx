@@ -251,9 +251,9 @@ export default function LessonPage({
   const nextLessonTitle = data.nextLesson?.title ?? null;
 
   return (
-    <div className="flex flex-col h-screen bg-[#0B0B0C] overflow-hidden">
+    <div style={{ background: "#0B0B0C", color: "#EDEDED", minHeight: "100vh" }}>
       {/* Top 3px accent stripe */}
-      <div className="h-[3px] bg-[#10B981] shrink-0" />
+      <div style={{ height: 3, background: "#10B981" }} />
 
       {/* Header */}
       <LessonHeader
@@ -285,36 +285,48 @@ export default function LessonPage({
         courseTitle={data.course.title}
       />
 
-      {/* Main split — 50/50 grid per V1 Dossier */}
-      <div className="flex-1 flex flex-col lg:grid min-h-0" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        {/* Theory */}
-        <div className="w-full h-[38vh] lg:h-full min-h-0 border-b lg:border-b-0 lg:border-r-2 border-white/[0.07] bg-[#0B0B0C]">
+      {/* Main split — 50/50 grid, page scrolls */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          minHeight: 760,
+        }}
+        className="lesson-main-split"
+      >
+        {/* LEFT — Theory */}
+        <div style={{ borderRight: "2px solid rgba(255,255,255,0.07)" }}>
           <TheoryPanel content={data.lesson.content} />
         </div>
 
-        {/* Editor + Console */}
-        <div className="flex flex-col min-h-0">
+        {/* RIGHT — Editor + Console */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateRows: "auto 1fr auto",
+            minHeight: 0,
+            background: "#0E0E10",
+          }}
+        >
           {isQuiz ? (
-            <QuizTask
-              tests={data.lesson.tests}
-              onResult={handleQuizResult}
-              isRunning={isRunning}
-            />
+            <div style={{ gridRow: "1 / span 3" }}>
+              <QuizTask
+                tests={data.lesson.tests}
+                onResult={handleQuizResult}
+                isRunning={isRunning}
+              />
+            </div>
           ) : (
             <>
-              <div className="flex-1 min-h-0">
-                <CodeEditor
-                  code={code}
-                  language={data.lesson.language}
-                  onChange={handleCodeChange}
-                  onRun={handleRun}
-                  onReset={handleReset}
-                  isRunning={isRunning}
-                />
-              </div>
-              <div className="h-[180px] lg:h-[200px] shrink-0">
-                <ConsoleOutput result={runResult} isRunning={isRunning} />
-              </div>
+              <CodeEditor
+                code={code}
+                language={data.lesson.language}
+                onChange={handleCodeChange}
+                onRun={handleRun}
+                onReset={handleReset}
+                isRunning={isRunning}
+              />
+              <ConsoleOutput result={runResult} isRunning={isRunning} />
             </>
           )}
         </div>

@@ -181,6 +181,17 @@ pre {
   caret-color: transparent !important;
 }
 
+/* Lesson page responsive split — stack to single column under 1024px */
+@media (max-width: 1023px) {
+  .lesson-main-split {
+    grid-template-columns: 1fr !important;
+  }
+  .lesson-main-split > div:first-child {
+    border-right: none !important;
+    border-bottom: 2px solid rgba(255,255,255,0.07);
+  }
+}
+
 /* Custom scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
