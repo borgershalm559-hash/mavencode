@@ -189,7 +189,11 @@ export function CodeEditor({
             readOnly,
             contextmenu: false,
             automaticLayout: true,
-          }}
+            // Force classic textarea-based input (more predictable styling
+            // than the newer EditContext API which renders a floating
+            // <div class="native-edit-context"> that can leak through CSS resets)
+            experimentalEditContextEnabled: false,
+          } as unknown as import("monaco-editor").editor.IStandaloneEditorConstructionOptions}
         />
       </div>
     </>

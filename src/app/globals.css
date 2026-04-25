@@ -2,19 +2,21 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Pointer cursor for all interactive elements */
-button,
-a,
-[role="button"],
-[role="link"],
-[role="tab"],
-[role="checkbox"],
-[role="menuitem"],
-[role="option"],
-[tabindex]:not([tabindex="-1"]),
-label[for],
-select,
-summary {
+/* Pointer cursor for all interactive elements.
+   Excludes Monaco Editor internals (.monaco-editor *) which use tabindex/role
+   for accessibility but should keep their own text/grab cursors. */
+button:not(.monaco-editor *),
+a:not(.monaco-editor *),
+[role="button"]:not(.monaco-editor *),
+[role="link"]:not(.monaco-editor *),
+[role="tab"]:not(.monaco-editor *),
+[role="checkbox"]:not(.monaco-editor *),
+[role="menuitem"]:not(.monaco-editor *),
+[role="option"]:not(.monaco-editor *),
+[tabindex]:not([tabindex="-1"]):not(.monaco-editor *):not(.monaco-editor),
+label[for]:not(.monaco-editor *),
+select:not(.monaco-editor *),
+summary:not(.monaco-editor *) {
   cursor: pointer;
 }
 
@@ -166,12 +168,16 @@ pre {
   resize: none;
 }
 
-/* Force Monaco's internal hidden input/textarea to remain invisible.
-   Without this, Tailwind preflight + global resets can give the textarea
-   a visible background/border, so it appears as a draggable rectangle
+/* Force Monaco's internal input-capture elements to remain invisible.
+   Monaco uses either <textarea class="inputarea"> (legacy) or
+   <div class="native-edit-context"> (EditContext API). Both must be fully
+   transparent — without this, Tailwind preflight + global resets give them
+   a visible background/border that appears as a draggable rectangle
    blocking the editor surface. */
 .monaco-editor textarea.inputarea,
-.monaco-editor .inputarea {
+.monaco-editor .inputarea,
+.monaco-editor .native-edit-context,
+.native-edit-context {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -179,6 +185,21 @@ pre {
   resize: none !important;
   color: transparent !important;
   caret-color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Monaco's input layer must accept clicks but not show a pointer cursor */
+.monaco-editor .native-edit-context,
+.monaco-editor .inputarea,
+.native-edit-context {
+  cursor: text !important;
+}
+
+/* Ensure Monaco internals never have visible borders from Tailwind preflight */
+.monaco-editor *,
+.monaco-editor *::before,
+.monaco-editor *::after {
+  border-color: inherit;
 }
 
 /* Lesson page responsive split — stack to single column under 1024px */
