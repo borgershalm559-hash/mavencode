@@ -5,7 +5,6 @@ import Yandex from "next-auth/providers/yandex";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
-import { rateLimit } from "./rate-limit";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -46,11 +45,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials.password as string;
 
         if (!email || !password) return null;
-
-        // Distributed rate limit: 5 attempts per 15 min per email (Upstash).
-        // Falls back to allow-all when UPSTASH_REDIS_REST_URL is not set.
-        const rl = await rateLimit("auth", email);
-        if (!(rl as { ok: true }).ok) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.password) return null;
