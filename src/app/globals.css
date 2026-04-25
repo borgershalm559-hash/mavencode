@@ -202,6 +202,31 @@ pre {
   border-color: inherit;
 }
 
+/* News dossier responsive — stack to single column under 900px */
+@media (max-width: 899px) {
+  .dossier-news {
+    padding: 24px 20px 48px !important;
+  }
+  .dossier-hero {
+    grid-template-columns: 1fr !important;
+  }
+  .dossier-hero h1 {
+    font-size: 40px !important;
+  }
+  .dossier-hero h1 span[style*="display: block"] {
+    font-size: 32px !important;
+  }
+  .dossier-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .dossier-stats > div:nth-child(3) {
+    border-right: none !important;
+  }
+  .dossier-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* Lesson page responsive split — stack to single column under 1024px */
 @media (max-width: 1023px) {
   .lesson-main-split {

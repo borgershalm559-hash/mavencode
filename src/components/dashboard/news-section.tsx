@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import {
   RefreshCw, Calendar, Bell, Pin, ArrowRight,
   ArrowLeft, Clock, Link as LinkIcon, Check, Search,
+  Share2, Bookmark, Sparkles,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -428,7 +429,86 @@ const mdComponents = {
   hr: () => <hr className="border-white/[0.07] my-6" />,
 };
 
-/* ── Detail View ──────────────────────────────────────── */
+/* ── V1 Dossier markdown components — Fraunces serif, monospace § headings ── */
+const dossierMd = {
+  h1: ({ children }: { children?: React.ReactNode }) => (
+    <h1 style={{ fontFamily: '"Fraunces", Georgia, serif', fontWeight: 300, fontSize: 38, lineHeight: 1.05, letterSpacing: "-0.02em", margin: "0 0 18px", color: "#fff" }}>
+      {children}
+    </h1>
+  ),
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <h2 className="font-mono" style={{ fontSize: 11, letterSpacing: "0.3em", textTransform: "uppercase", color: G, margin: "32px 0 12px" }}>
+      § {children}
+    </h2>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <h3 style={{ fontFamily: '"Fraunces", Georgia, serif', fontWeight: 400, fontSize: 24, margin: "24px 0 10px", color: "#fff" }}>
+      {children}
+    </h3>
+  ),
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <p style={{ margin: "0 0 16px", fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,0.78)" } as React.CSSProperties}>
+      {children}
+    </p>
+  ),
+  strong: ({ children }: { children?: React.ReactNode }) => (
+    <strong style={{ color: "#fff", fontWeight: 600 }}>{children}</strong>
+  ),
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <a href={href} style={{ color: G, textDecoration: "underline", textUnderlineOffset: 2 }} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul style={{ margin: "0 0 18px", padding: 0, listStyle: "none", display: "grid", gap: 8 }}>{children}</ul>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <ol style={{ margin: "0 0 18px", padding: 0, listStyle: "none", display: "grid", gap: 10 }}>{children}</ol>
+  ),
+  li: ({ children, ...rest }: { children?: React.ReactNode; ordered?: boolean; index?: number }) => {
+    const ordered = (rest as { ordered?: boolean }).ordered;
+    if (ordered) {
+      return (
+        <li style={{ display: "grid", gridTemplateColumns: "32px 1fr", gap: 14, fontSize: 16, lineHeight: 1.6, color: "rgba(255,255,255,0.8)" }}>
+          <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: G, border: `1.5px solid ${G_LINE}`, background: G_SOFT, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            ●
+          </span>
+          <span>{children}</span>
+        </li>
+      );
+    }
+    return (
+      <li style={{ display: "flex", gap: 12, fontSize: 16, lineHeight: 1.6, color: "rgba(255,255,255,0.78)" }}>
+        <span style={{ marginTop: 10, width: 6, height: 6, background: G, flexShrink: 0 }} />
+        <span>{children}</span>
+      </li>
+    );
+  },
+  blockquote: ({ children }: { children?: React.ReactNode }) => (
+    <blockquote style={{ margin: "20px 0", padding: "16px 20px", borderLeft: `3px solid ${G}`, background: G_SOFT, fontSize: 16, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", fontStyle: "italic" }}>
+      {children}
+    </blockquote>
+  ),
+  code: ({ className, children }: { className?: string; children?: React.ReactNode }) => {
+    const isBlock = className?.includes("language-");
+    if (isBlock) {
+      return (
+        <pre className="custom-scrollbar" style={{ margin: "16px 0", padding: 14, background: "#0E0E10", border: "1.5px solid rgba(255,255,255,0.06)", overflow: "auto", fontSize: 13 }}>
+          <code className="font-mono" style={{ color: "rgba(251,191,36,0.85)" }}>{children}</code>
+        </pre>
+      );
+    }
+    return (
+      <code className="font-mono" style={{ color: G, background: G_SOFT, border: `1px solid ${G_LINE}`, padding: "1px 6px", fontSize: "0.86em" }}>
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  hr: () => <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "24px 0" }} />,
+};
+
+/* ── Detail View — V1 Dossier (no author card) ──────────────────────────── */
 function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
   item: NewsItem;
   allNews: NewsItem[] | undefined;
@@ -436,12 +516,14 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
   onSelectNews: (n: NewsItem) => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const c = CATEGORY_HEX[item.category as CatKey];
+  const [bookmarked, setBookmarked] = useState(false);
+  const c = CATEGORY_HEX[item.category as CatKey] ?? { main: G, soft: G_SOFT, line: G_LINE, label: "NWS" };
   const minutes = readMin(item.body);
+  const wordCount = item.body.split(/\s+/).filter(Boolean).length;
+  const highlights = extractHighlights(item.body, item.summary);
+
   const sorted = allNews ?? [];
-  const idx = sorted.findIndex((n) => n.id === item.id);
-  const prevNews = idx < sorted.length - 1 ? sorted[idx + 1] : null;
-  const nextNews = idx > 0 ? sorted[idx - 1] : null;
+  const related = sorted.filter((n) => n.id !== item.id).slice(0, 3);
 
   const handleCopyLink = useCallback(() => {
     const url = `${window.location.origin}/dashboard?news=${item.id}`;
@@ -451,109 +533,578 @@ function NewsDetailView({ item, allNews, onBack, onSelectNews }: {
     });
   }, [item.id]);
 
-  const date = new Date(item.date + "T00:00:00").toLocaleDateString("ru-RU", {
-    day: "numeric", month: "long", year: "numeric",
-  });
+  const handleShare = useCallback(() => {
+    const url = `${window.location.origin}/dashboard?news=${item.id}`;
+    if (navigator.share) {
+      navigator.share({ title: item.title, url }).catch(() => {});
+    } else {
+      handleCopyLink();
+    }
+  }, [item.id, item.title, handleCopyLink]);
+
+  const dateDisplay = item.date.replace(/-/g, ".");
+  const titleParts = item.title.split(":");
+  const titleMain = titleParts[0];
+  const titleTail = titleParts.slice(1).join(":").trim();
+
+  const stats: { k: string; v: string; accent?: boolean }[] = [
+    { k: "ID", v: item.id.toUpperCase() },
+    { k: "RUBRIC", v: c.label },
+    { k: "DATE", v: dateDisplay },
+    { k: "READ", v: `~${minutes} MIN` },
+    { k: "WORDS", v: String(wordCount) },
+    { k: "STATUS", v: item.pinned ? "PINNED" : "PUBLISHED", accent: item.pinned },
+  ];
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
-      {/* Top bar */}
-      <div className="flex items-center justify-between">
+    <div
+      style={{
+        background: "#0A0A0B",
+        color: "#fff",
+        fontFamily: "'Inter', system-ui, sans-serif",
+        padding: "32px 56px 64px",
+      }}
+      className="dossier-news"
+    >
+      {/* TOP BAR */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: 18,
+          borderBottom: "2px solid rgba(255,255,255,0.08)",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
         <button
           onClick={onBack}
-          className="size-9 flex items-center justify-center border-2 border-white/[0.07] text-white/40 hover:border-white/[0.15] hover:text-white/70 transition-all"
+          className="font-mono"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            fontSize: 10,
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.45)",
+            background: "transparent",
+            border: 0,
+            cursor: "pointer",
+          }}
         >
-          <ArrowLeft className="size-5" />
+          <ArrowLeft size={14} />
+          <span>← К хронике</span>
+          <span style={{ color: "rgba(255,255,255,0.2)" }}>/</span>
+          <span style={{ color: G }}>news</span>
+          <span style={{ color: "rgba(255,255,255,0.2)" }}>/</span>
+          <span>{item.id}</span>
         </button>
-        <button
-          onClick={handleCopyLink}
-          className="flex items-center gap-2 font-mono text-xs text-white/40 hover:text-white/70 transition-colors px-3 py-1.5 border-2 border-transparent hover:border-white/[0.05]"
-        >
-          {copied ? (
-            <><Check className="size-4 text-emerald-600" /><span className="text-emerald-600">Скопировано</span></>
-          ) : (
-            <><LinkIcon className="size-4" /><span>Скопировать ссылку</span></>
-          )}
-        </button>
-      </div>
 
-      {/* Cover */}
-      <div className="border-2 border-white/[0.07] overflow-hidden">
-        {item.imageUrl ? (
-          <div className="relative aspect-[2.2/1]">
-            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-          </div>
-        ) : (
-          <div
-            className="h-32 flex items-center justify-center"
-            style={{ background: c?.soft ?? G_SOFT }}
-          >
-            <CategoryIcon cat={item.category} className="size-10 opacity-30" style={{ color: c?.main ?? G } as React.CSSProperties} />
-          </div>
-        )}
-      </div>
-
-      {/* Meta */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <CategoryPill cat={item.category} />
-        <span className="font-mono text-xs text-white/30">{date}</span>
-        <span className="flex items-center gap-1.5 font-mono text-xs text-white/25">
-          <Clock className="size-4" /> ~{minutes} мин чтения
-        </span>
-        {item.pinned && (
-          <span className="inline-flex items-center gap-1 font-mono text-xs px-3 py-1 border-2 font-medium"
-                style={{ color: G, background: G_SOFT, borderColor: G_LINE }}>
-            <Pin className="size-3.5 fill-current opacity-60" /> Закреплено
-          </span>
-        )}
-      </div>
-
-      {/* Title */}
-      <h1 className="text-white text-2xl sm:text-3xl font-bold leading-tight tracking-tight">
-        {item.title}
-      </h1>
-
-      {/* Body */}
-      <div className="bg-[#0F1011] border-2 border-white/[0.07] px-5 sm:px-6 py-5 overflow-hidden">
-        <article className="[&>*:first-child]:mt-0">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents as never}>
-            {item.body}
-          </ReactMarkdown>
-        </article>
-      </div>
-
-      {/* Prev / Next */}
-      {(prevNews || nextNews) && (
-        <div className="grid grid-cols-2 gap-4 pt-2">
-          {prevNews ? (
-            <button
-              onClick={() => onSelectNews(prevNews)}
-              className="group text-left border-2 border-white/[0.07] bg-[#0F1011] p-4 transition-all hover:border-white/[0.15]"
-              style={{ boxShadow: "3px 3px 0 0 rgba(16,185,129,0.25)" }}
-            >
-              <div className="flex items-center gap-1.5 font-mono text-xs text-white/25 mb-2">
-                <ArrowLeft className="size-4" /> Предыдущая
-              </div>
-              <p className="text-white/70 text-base font-medium truncate group-hover:text-[#10B981] transition-colors">
-                {prevNews.title}
-              </p>
-            </button>
-          ) : <div />}
-          {nextNews ? (
-            <button
-              onClick={() => onSelectNews(nextNews)}
-              className="group text-right border-2 border-white/[0.07] bg-[#0F1011] p-4 transition-all hover:border-white/[0.15]"
-            >
-              <div className="flex items-center justify-end gap-1.5 font-mono text-xs text-white/25 mb-2">
-                Следующая <ArrowRight className="size-4" />
-              </div>
-              <p className="text-white/70 text-base font-medium truncate group-hover:text-[#10B981] transition-colors">
-                {nextNews.title}
-              </p>
-            </button>
-          ) : <div />}
+        <div style={{ display: "flex", gap: 8 }}>
+          <ActionButton onClick={handleShare} icon={<Share2 size={12} />} label="share" />
+          <ActionButton
+            onClick={() => setBookmarked((b) => !b)}
+            icon={<Bookmark size={12} fill={bookmarked ? G : "none"} stroke={bookmarked ? G : "currentColor"} />}
+            label="bookmark"
+            on={bookmarked}
+          />
+          <ActionButton
+            onClick={handleCopyLink}
+            icon={copied ? <Check size={12} /> : <LinkIcon size={12} />}
+            label={copied ? "copied" : "copy link"}
+            on={copied}
+          />
         </div>
-      )}
+      </div>
+
+      {/* HERO */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "180px 1fr",
+          gap: 32,
+          paddingTop: 28,
+          paddingBottom: 32,
+          borderBottom: "2px solid rgba(255,255,255,0.08)",
+        }}
+        className="dossier-hero"
+      >
+        {/* Left rail — date stamp + category */}
+        <div>
+          <div
+            style={{
+              background: "#14141A",
+              border: "2px solid rgba(255,255,255,0.1)",
+              boxShadow: `6px 6px 0 #047857`,
+              padding: "16px 14px",
+              textAlign: "center",
+            }}
+          >
+            <div className="font-mono" style={{ fontSize: 10, letterSpacing: "0.28em", color: "rgba(255,255,255,0.4)" }}>
+              {monthShort(item.date)}
+            </div>
+            <div
+              style={{
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 56,
+                fontWeight: 300,
+                lineHeight: 1,
+                color: "#fff",
+                margin: "6px 0",
+              }}
+            >
+              {dayNum(item.date)}
+            </div>
+            <div className="font-mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: G }}>
+              {new Date(item.date + "T00:00:00").getFullYear()}
+            </div>
+          </div>
+
+          <div
+            className="font-mono"
+            style={{
+              marginTop: 14,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 12px",
+              border: `2px solid ${c.line}`,
+              background: c.soft,
+              color: c.main,
+              fontSize: 10,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              fontWeight: 700,
+            }}
+          >
+            <CategoryIcon cat={item.category} className="size-[11px]" />
+            {item.category}
+          </div>
+
+          {item.pinned && (
+            <div
+              className="font-mono"
+              style={{
+                marginTop: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                border: `2px solid ${G_LINE}`,
+                background: G_SOFT,
+                color: G,
+                fontSize: 10,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                fontWeight: 600,
+              }}
+            >
+              <Pin size={11} /> Закреплено
+            </div>
+          )}
+        </div>
+
+        {/* Title block (no author) */}
+        <div>
+          <div
+            className="font-mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.32em",
+              textTransform: "uppercase",
+              color: G,
+              fontWeight: 700,
+              marginBottom: 14,
+            }}
+          >
+            /news · dossier #{item.id.toUpperCase()}
+          </div>
+          <h1
+            style={{
+              fontFamily: '"Fraunces", Georgia, serif',
+              fontWeight: 300,
+              fontSize: 64,
+              lineHeight: 1.02,
+              letterSpacing: "-0.025em",
+              margin: "0 0 18px",
+              color: "#fff",
+            }}
+          >
+            {titleMain}
+            {titleTail && <span style={{ color: G }}>:</span>}
+            {titleTail && (
+              <span style={{ display: "block", color: "rgba(255,255,255,0.65)", fontStyle: "italic", fontSize: 56 }}>
+                {titleTail}
+              </span>
+            )}
+          </h1>
+          <p
+            style={
+              {
+                fontSize: 18,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.62)",
+                maxWidth: 720,
+                margin: "0 0 22px",
+                textWrap: "pretty",
+              } as React.CSSProperties
+            }
+          >
+            {item.summary}
+          </p>
+          <div
+            className="font-mono"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 18,
+              fontSize: 11,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.4)",
+            }}
+          >
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Clock size={11} />~{minutes} мин
+            </span>
+            <span>·</span>
+            <span>{relativeDate(item.date)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* SUB STATS BAR */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          borderBottom: "2px solid rgba(255,255,255,0.08)",
+          marginBottom: 32,
+        }}
+        className="dossier-stats"
+      >
+        {stats.map((s, i) => (
+          <div
+            key={s.k}
+            style={{
+              padding: "14px 18px",
+              borderRight: i < stats.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+            }}
+          >
+            <div
+              className="font-mono"
+              style={{ fontSize: 10, letterSpacing: "0.28em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}
+            >
+              {s.k}
+            </div>
+            <div
+              className="font-mono"
+              style={{
+                fontSize: 14,
+                color: s.accent ? G : "#fff",
+                marginTop: 6,
+                fontWeight: 600,
+                letterSpacing: "0.05em",
+              }}
+            >
+              {s.v}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* MAIN GRID */}
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 48 }}
+        className="dossier-grid"
+      >
+        {/* Article */}
+        <article>
+          {/* Cover plate */}
+          <div
+            style={{
+              height: 220,
+              background: `linear-gradient(135deg, #04785733 0%, #0A0A0B 70%)`,
+              border: "2px solid rgba(255,255,255,0.08)",
+              marginBottom: 32,
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {item.imageUrl ? (
+              <img
+                src={item.imageUrl}
+                alt=""
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }}
+              />
+            ) : (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage: `repeating-linear-gradient(45deg, ${G}10 0 2px, transparent 2px 14px)`,
+                }}
+              />
+            )}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                padding: 22,
+              }}
+            >
+              <div
+                className="font-mono"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 10,
+                  letterSpacing: "0.28em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.6)",
+                }}
+              >
+                <span>fig. 01 · {item.id}</span>
+                <span>{c.label}</span>
+              </div>
+              {!item.imageUrl && (
+                <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                  <div
+                    style={{
+                      width: 88,
+                      height: 88,
+                      border: `2px solid ${G_LINE}`,
+                      background: G_SOFT,
+                      display: "grid",
+                      placeItems: "center",
+                      color: G,
+                    }}
+                  >
+                    <Sparkles size={42} />
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: '"Fraunces", Georgia, serif',
+                        fontStyle: "italic",
+                        fontSize: 28,
+                        lineHeight: 1.1,
+                        color: "#fff",
+                      }}
+                    >
+                      {item.title}
+                    </div>
+                    <div
+                      className="font-mono"
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: "0.22em",
+                        textTransform: "uppercase",
+                        color: "rgba(255,255,255,0.55)",
+                        marginTop: 6,
+                      }}
+                    >
+                      {c.label} · {dateDisplay}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Article body */}
+          <div className="dossier-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={dossierMd as never}>
+              {item.body}
+            </ReactMarkdown>
+          </div>
+        </article>
+
+        {/* Aside (no author card) */}
+        <aside>
+          <div style={{ position: "sticky", top: 24, display: "grid", gap: 20 }}>
+            {/* Highlights */}
+            {highlights.length > 0 && (
+              <div style={{ background: "#0F1011", border: "2px solid rgba(255,255,255,0.08)" }}>
+                <div
+                  className="font-mono"
+                  style={{
+                    padding: "10px 14px",
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 10,
+                    letterSpacing: "0.28em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <span style={{ color: G, fontWeight: 700 }}>tl;dr</span>
+                  <span style={{ color: "rgba(255,255,255,0.35)" }}>
+                    {highlights.length} {highlights.length === 1 ? "пункт" : highlights.length < 5 ? "пункта" : "пунктов"}
+                  </span>
+                </div>
+                <div style={{ padding: "14px 16px" }}>
+                  {highlights.map((h, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "26px 1fr",
+                        gap: 10,
+                        padding: "8px 0",
+                        borderBottom:
+                          i < highlights.length - 1 ? "1px dashed rgba(255,255,255,0.06)" : "none",
+                      }}
+                    >
+                      <span
+                        className="font-mono"
+                        style={{
+                          fontSize: 10,
+                          letterSpacing: "0.18em",
+                          color: G,
+                          fontWeight: 700,
+                          textAlign: "right",
+                        }}
+                      >
+                        +{String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span style={{ fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,0.78)" }}>{h}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Related */}
+            {related.length > 0 && (
+              <div style={{ background: "#0F1011", border: "2px solid rgba(255,255,255,0.08)" }}>
+                <div
+                  className="font-mono"
+                  style={{
+                    padding: "10px 14px",
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    fontSize: 10,
+                    letterSpacing: "0.28em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.55)",
+                  }}
+                >
+                  связанные записи
+                </div>
+                <div>
+                  {related.map((r, i) => {
+                    const rc = CATEGORY_HEX[r.category as CatKey] ?? { main: G, soft: G_SOFT, line: G_LINE, label: "NWS" };
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => onSelectNews(r)}
+                        style={{
+                          width: "100%",
+                          textAlign: "left",
+                          background: "transparent",
+                          padding: "12px 14px",
+                          borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                          borderLeft: 0,
+                          borderRight: 0,
+                          borderBottom: 0,
+                          display: "grid",
+                          gap: 6,
+                          cursor: "pointer",
+                        }}
+                        className="hover:bg-white/[0.03] transition-colors"
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span
+                            className="font-mono"
+                            style={{
+                              fontSize: 9,
+                              letterSpacing: "0.22em",
+                              color: rc.main,
+                              fontWeight: 700,
+                              padding: "2px 6px",
+                              border: `1.5px solid ${rc.line}`,
+                              background: rc.soft,
+                            }}
+                          >
+                            {rc.label}
+                          </span>
+                          <span
+                            className="font-mono"
+                            style={{
+                              fontSize: 10,
+                              letterSpacing: "0.18em",
+                              color: "rgba(255,255,255,0.35)",
+                            }}
+                          >
+                            {r.date.replace(/-/g, ".")}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 13.5, lineHeight: 1.4, color: "rgba(255,255,255,0.82)" }}>
+                          {r.title}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+
+      {/* Footer ribbon */}
+      <div
+        className="font-mono"
+        style={{
+          marginTop: 48,
+          paddingTop: 18,
+          borderTop: "2px solid rgba(255,255,255,0.08)",
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 10,
+          letterSpacing: "0.28em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.3)",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <span>MavenCode · news/dossier</span>
+        <span>{item.id.toUpperCase()} · {dateDisplay}</span>
+        <span>v1 · the dossier</span>
+      </div>
     </div>
+  );
+}
+
+/* Small button used in top action bar */
+function ActionButton({ icon, label, onClick, on }: { icon: React.ReactNode; label: string; onClick: () => void; on?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className="font-mono"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 14px",
+        background: on ? G_SOFT : "transparent",
+        color: on ? G : "rgba(255,255,255,0.55)",
+        border: `2px solid ${on ? G_LINE : "rgba(255,255,255,0.1)"}`,
+        fontSize: 10,
+        letterSpacing: "0.22em",
+        textTransform: "uppercase",
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
