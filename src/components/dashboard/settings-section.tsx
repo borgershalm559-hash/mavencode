@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { PasswordSection } from "./profile/password-section";
+import { DeleteAccountSection } from "./profile/delete-account-section";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 14 },
@@ -17,6 +18,7 @@ export function SettingsSection() {
       className="space-y-4 max-w-2xl"
     >
       <PasswordSection />
+      <DeleteAccountSection />
     </motion.div>
   );
 }
