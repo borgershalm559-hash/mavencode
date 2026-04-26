@@ -13,7 +13,8 @@
     "seed:html-102":      "npx tsx prisma/seed-html-102.ts",
     "seed:html-102-news": "npx tsx prisma/seed-html-102-news.ts",
     "seed:css-101":       "npx tsx prisma/seed-css-101.ts",
-    "seed:css-101-news":  "npx tsx prisma/seed-css-101-news.ts"
+    "seed:css-101-news":  "npx tsx prisma/seed-css-101-news.ts",
+    "reset:news":         "npx tsx prisma/reset-news.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
