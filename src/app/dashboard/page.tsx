@@ -103,7 +103,7 @@ export default function DashboardPage() {
             }}
           />
 
-          <main className="relative px-6 py-8 overflow-y-auto max-h-screen bg-canvas">
+          <main className="relative px-6 py-8 overflow-y-auto max-h-screen bg-canvas custom-scrollbar">
             <AnimatePresence mode="wait">
               {selectedCourse ? (
                 <motion.div
