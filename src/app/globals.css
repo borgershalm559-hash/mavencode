@@ -272,35 +272,64 @@ html:has(.lesson-main-split) body {
   overflow: hidden;
 }
 
-/* Custom scrollbar — at rest the thumb is barely visible white/8%.
-   Hovering anywhere over the scrollable area lights the thumb green so
-   the user does not need to land precisely on the 4px-wide track. */
+/* ── Custom scrollbar (global) ────────────────────────────────────
+   Applied to every scrollable element by default — html, body, panels,
+   modals, code blocks, etc. Monaco editor is excluded so its own
+   internal scrollbars stay intact.
+
+   At rest the thumb is barely visible (white/8%). Hover over the
+   scrollable area lights the thumb green so the user does not need to
+   land precisely on the 4px track.
+
+   The .custom-scrollbar class still exists and behaves identically — it
+   is now equivalent to the default but kept for explicit annotation. */
+*,
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
-  transition: scrollbar-color 0.15s ease;
 }
+*:hover,
 .custom-scrollbar:hover {
   scrollbar-color: #10B981 transparent;
 }
+*::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
+*::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+*::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 0;
   transition: background 0.15s ease;
 }
+*:hover::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar:hover::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #10B981;
 }
+*::-webkit-scrollbar-corner,
 .custom-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* Monaco editor keeps its own native dark scrollbars — don't touch. */
+.monaco-editor,
+.monaco-editor *,
+.monaco-scrollable-element,
+.monaco-scrollable-element * {
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+}
+.monaco-editor *::-webkit-scrollbar,
+.monaco-scrollable-element *::-webkit-scrollbar {
+  width: auto;
+  height: auto;
 }
 
 /* Hide scrollbar but keep scroll ability */
