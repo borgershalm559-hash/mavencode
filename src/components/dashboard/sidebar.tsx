@@ -92,11 +92,10 @@ export function Sidebar({
         className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden custom-scrollbar"
         style={{ padding: collapsed ? "12px 6px 0" : "0 12px" }}
       >
-        {sections.map((s, i) => {
+        {sections.map((s) => {
           const isActive = active === s.key;
           const Icon = s.icon;
           const badge = BADGES[s.key];
-          const n = String(i + 1).padStart(2, "0");
 
           return (
             <div key={s.key} className="relative group/nav">
@@ -118,14 +117,6 @@ export function Sidebar({
                   <Icon className="size-[18px] flex-shrink-0" />
                 ) : (
                   <>
-                    {/* Number */}
-                    <span
-                      className="font-mono text-[10px] font-black tabular-nums w-6 flex-shrink-0"
-                      style={{ color: isActive ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.3)" }}
-                    >
-                      {n}
-                    </span>
-
                     {/* Icon */}
                     <Icon className="size-[17px] flex-shrink-0" />
 
