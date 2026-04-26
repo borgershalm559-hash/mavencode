@@ -18,35 +18,40 @@ const G_SOFT = "rgba(16,185,129,0.08)";
 const G_LINE = "rgba(16,185,129,0.24)";
 const G_DEEP = "#047857";
 
-/* ── Career tracks ────────────────────────────────────── */
+/* ── Career tracks ────────────────────────────────────────
+ * Сопоставление с тегами курсов делается case-insensitive (см.
+ * trackCourses ниже). Поэтому в курсе тег "HTML" попадает в трек
+ * со списком ["html", ...]. Также есть алиасы для русских тегов
+ * ("веб") и для альтернативных коротких форм ("ts", "next").
+ */
 const TRACKS = [
   {
     id: "frontend",
     title: "Frontend-инженер",
     subtitle: "от языка к production-интерфейсам",
     color: "#06B6D4",
-    tags: ["frontend", "react", "css"],
+    tags: ["frontend", "react", "html", "css", "ts", "next", "web", "веб", "дизайн", "семантика", "формы"],
   },
   {
     id: "backend",
     title: "Backend-инженер",
     subtitle: "сервисы, БД, распределённые системы",
     color: "#EF4444",
-    tags: ["backend", "architecture", "go"],
+    tags: ["backend", "architecture", "go", "node"],
   },
   {
     id: "data",
     title: "Инженер данных",
     subtitle: "Python, SQL, пайплайны",
     color: "#A78BFA",
-    tags: ["data", "python"],
+    tags: ["data", "python", "sql", "ml", "основы"],
   },
   {
     id: "devops",
     title: "DevOps-инженер",
     subtitle: "инфраструктура и наблюдаемость",
     color: G,
-    tags: ["devops", "infra"],
+    tags: ["devops", "infra", "docker"],
   },
   {
     id: "all",
@@ -97,7 +102,10 @@ function iconColor(ico: string) { return ICON_COLOR[ico] || "#ffffff"; }
 
 function trackCourses(track: typeof TRACKS[0], courses: CourseListItem[]): CourseListItem[] {
   if (track.id === "all") return courses;
-  return courses.filter((c) => c.tags.some((t) => track.tags.includes(t)));
+  const trackTagsLower = new Set(track.tags.map((t) => t.toLowerCase()));
+  return courses.filter((c) =>
+    c.tags.some((t) => trackTagsLower.has(t.toLowerCase())),
+  );
 }
 
 /* ── Primitives ───────────────────────────────────────── */

@@ -10,22 +10,27 @@ const GREEN      = "#10B981";
 const GREEN_SOFT = "rgba(16,185,129,0.09)";
 const GREEN_LINE = "rgba(16,185,129,0.28)";
 
-// Badge data matching V1 design
-const BADGES: Record<string, string> = {
-  courses: "4",
-  news:    "2",
-  pvp:     "live",
-};
-
 interface SidebarProps {
   active: string;
   onNavigate: (key: string) => void;
   profile?: UserProfile;
   collapsed: boolean;
   onToggle: () => void;
+  coursesCount?: number;
+  newsCount?: number;
 }
 
-export function Sidebar({ active, onNavigate, profile, collapsed, onToggle }: SidebarProps) {
+export function Sidebar({
+  active, onNavigate, profile, collapsed, onToggle,
+  coursesCount, newsCount,
+}: SidebarProps) {
+  // Dynamic badges from real data; "live" is static for PvP.
+  const BADGES: Record<string, string> = {
+    ...(typeof coursesCount === "number" && coursesCount > 0 ? { courses: String(coursesCount) } : {}),
+    ...(typeof newsCount === "number" && newsCount > 0 ? { news: String(newsCount) } : {}),
+    pvp: "live",
+  };
+
   const xpPercent = profile
     ? Math.min((profile.xp / profile.xpForNextLevel) * 100, 100)
     : 0;

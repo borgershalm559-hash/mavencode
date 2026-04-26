@@ -90,6 +90,8 @@ export default function DashboardPage() {
             profile={profile}
             collapsed={collapsed}
             onToggle={handleToggle}
+            coursesCount={courses?.length}
+            newsCount={news?.length}
           />
 
           {/* Vertical divider */}
