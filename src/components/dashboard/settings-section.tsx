@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { PasswordSection } from "./profile/password-section";
+import { ExportDataSection } from "./profile/export-data-section";
 import { DeleteAccountSection } from "./profile/delete-account-section";
 
 const itemVariants = {
@@ -18,6 +19,7 @@ export function SettingsSection() {
       className="space-y-4 max-w-2xl"
     >
       <PasswordSection />
+      <ExportDataSection />
       <DeleteAccountSection />
     </motion.div>
   );
