@@ -272,10 +272,16 @@ html:has(.lesson-main-split) body {
   overflow: hidden;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — at rest the thumb is barely visible white/8%.
+   Hovering anywhere over the scrollable area lights the thumb green so
+   the user does not need to land precisely on the 4px-wide track. */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  transition: scrollbar-color 0.15s ease;
+}
+.custom-scrollbar:hover {
+  scrollbar-color: #10B981 transparent;
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
@@ -287,7 +293,9 @@ html:has(.lesson-main-split) body {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 0;
+  transition: background 0.15s ease;
 }
+.custom-scrollbar:hover::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #10B981;
 }
