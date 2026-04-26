@@ -90,6 +90,7 @@ export function AuthForm({ activeTab }: AuthFormProps) {
   const [rateLocked, setRateLocked] = useState<number | null>(null);
   const [lockTimer, setLockTimer] = useState(0);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const hasAnimated = useRef(false);
@@ -195,6 +196,11 @@ export function AuthForm({ activeTab }: AuthFormProps) {
           setIsSubmitting(false);
           return;
         }
+        if (!ageConfirmed) {
+          setServerError("Нужно подтвердить что вам исполнилось 14 лет");
+          setIsSubmitting(false);
+          return;
+        }
         const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -203,6 +209,7 @@ export function AuthForm({ activeTab }: AuthFormProps) {
             email: form.values.email.trim().toLowerCase(),
             password: form.values.password,
             agree: true,
+            ageConfirm: true,
           }),
         });
 
@@ -714,6 +721,16 @@ export function AuthForm({ activeTab }: AuthFormProps) {
                   </a>
                   )
                 </span>
+              </label>
+
+              <label className="mt-2 flex items-start gap-2 font-mono text-[11px] leading-relaxed tracking-[0.04em] text-white/35 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={ageConfirmed}
+                  onChange={(e) => setAgeConfirmed(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 border-2 border-white/20 rounded-none flex-shrink-0 accent-[#10B981]"
+                />
+                <span>мне_исполнилось_14_лет</span>
               </label>
             </div>
           </div>

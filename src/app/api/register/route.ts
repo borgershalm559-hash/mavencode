@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     const email = body.email?.trim().toLowerCase();
     const password = body.password;
     const agree = body.agree === true;
+    const ageConfirm = body.ageConfirm === true;
 
     if (
       !email ||
@@ -36,6 +37,16 @@ export async function POST(req: Request) {
         {
           error:
             "Для регистрации необходимо согласиться с Условиями использования и Политикой обработки персональных данных.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!ageConfirm) {
+      return NextResponse.json(
+        {
+          error:
+            "Для регистрации необходимо подтвердить что вам исполнилось 14 лет.",
         },
         { status: 400 }
       );
