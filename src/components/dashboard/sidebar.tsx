@@ -190,35 +190,27 @@ export function Sidebar({
             )}
           </div>
 
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "auto" }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex-1 min-w-0 overflow-hidden"
-              >
-                <div className="text-white text-[11px] font-semibold truncate font-mono">
-                  {profile?.name || "Maven User"}
-                </div>
-                <div className="mt-1 flex items-center gap-1.5 font-mono text-[9px] font-black uppercase tracking-[0.15em]">
-                  <span
-                    className="px-1.5 py-0.5 border-2"
-                    style={{ color: GREEN, borderColor: GREEN_LINE, background: GREEN_SOFT }}
-                  >
-                    LV.{profile?.level ?? 1}
+          {!collapsed && (
+            <div className="flex-1 min-w-0 text-left">
+              <div className="text-white text-[11px] font-semibold truncate font-mono">
+                {profile?.name || "Maven User"}
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 font-mono text-[9px] font-black uppercase tracking-[0.15em]">
+                <span
+                  className="px-1.5 py-0.5 border-2"
+                  style={{ color: GREEN, borderColor: GREEN_LINE, background: GREEN_SOFT }}
+                >
+                  LV.{profile?.level ?? 1}
+                </span>
+                {(profile?.streak ?? 0) > 0 && (
+                  <span className="inline-flex items-center gap-0.5 text-white/50">
+                    <Flame className="size-2.5" />
+                    {profile?.streak}
                   </span>
-                  {(profile?.streak ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-white/50">
-                      <Flame className="size-2.5" />
-                      {profile?.streak}
-                    </span>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                )}
+              </div>
+            </div>
+          )}
         </button>
 
         {/* XP bar */}
