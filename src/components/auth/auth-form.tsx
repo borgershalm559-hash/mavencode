@@ -89,6 +89,7 @@ export function AuthForm({ activeTab }: AuthFormProps) {
   const [emailTaken, setEmailTaken] = useState<boolean | null>(null);
   const [rateLocked, setRateLocked] = useState<number | null>(null);
   const [lockTimer, setLockTimer] = useState(0);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const hasAnimated = useRef(false);
@@ -187,6 +188,13 @@ export function AuthForm({ activeTab }: AuthFormProps) {
 
     try {
       if (activeTab === "register") {
+        if (!agreedToTerms) {
+          setServerError(
+            "Нужно согласиться с Условиями использования и Политикой обработки персональных данных",
+          );
+          setIsSubmitting(false);
+          return;
+        }
         const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -194,6 +202,7 @@ export function AuthForm({ activeTab }: AuthFormProps) {
             name: form.values.name.trim(),
             email: form.values.email.trim().toLowerCase(),
             password: form.values.password,
+            agree: true,
           }),
         });
 
@@ -676,7 +685,12 @@ export function AuthForm({ activeTab }: AuthFormProps) {
           >
             <div className="overflow-hidden">
               <label className="flex items-start gap-2 font-mono text-[11px] leading-relaxed tracking-[0.04em] text-white/35 cursor-pointer select-none">
-                <input type="checkbox" className="w-4 h-4 mt-0.5 border-2 border-white/20 rounded-none flex-shrink-0 accent-[#10B981]" />
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 border-2 border-white/20 rounded-none flex-shrink-0 accent-[#10B981]"
+                />
                 <span>
                   я_согласен(
                   <a

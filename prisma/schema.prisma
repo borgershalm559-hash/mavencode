@@ -22,6 +22,10 @@ model User {
   streak        Int       @default(0)
   location      String?
   skills        String[]  @default([])
+  // ── Согласие с условиями и обработкой ПД (152-ФЗ)
+  agreedToTermsAt    DateTime?
+  agreedTermsVersion String?
+  agreedFromIp       String?
   accounts      Account[]
   sessions      Session[]
   achievements  Achievement[]

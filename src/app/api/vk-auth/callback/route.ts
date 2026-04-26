@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { encode } from "@auth/core/jwt";
 import { prisma } from "@/lib/prisma";
+import { LEGAL_VERSION } from "@/lib/legal-version";
 
 /**
  * VK OAuth callback — receives code + device_id + state from VK,
@@ -164,6 +165,9 @@ export async function GET(req: NextRequest) {
         name,
         image: vk.avatar ?? null,
         emailVerified: email ? new Date() : null,
+        // Sign-in via VK = consent (terms checkbox is shown on auth screen)
+        agreedToTermsAt: new Date(),
+        agreedTermsVersion: LEGAL_VERSION,
       },
     });
     // Create PvpRating for new user (events.createUser equivalent)

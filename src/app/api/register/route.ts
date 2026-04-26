@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getIp } from "@/lib/rate-limit";
+import { LEGAL_VERSION } from "@/lib/legal-version";
 
 export async function POST(req: Request) {
-  const rl = await rateLimit("register", getIp(req));
+  const ip = getIp(req);
+  const rl = await rateLimit("register", ip);
   if (rl instanceof NextResponse) return rl;
 
   try {
@@ -12,6 +14,7 @@ export async function POST(req: Request) {
     const name = body.name?.trim() || "";
     const email = body.email?.trim().toLowerCase();
     const password = body.password;
+    const agree = body.agree === true;
 
     if (
       !email ||
@@ -24,6 +27,16 @@ export async function POST(req: Request) {
     ) {
       return NextResponse.json(
         { error: "Некорректные данные" },
+        { status: 400 }
+      );
+    }
+
+    if (!agree) {
+      return NextResponse.json(
+        {
+          error:
+            "Для регистрации необходимо согласиться с Условиями использования и Политикой обработки персональных данных.",
+        },
         { status: 400 }
       );
     }
@@ -43,6 +56,9 @@ export async function POST(req: Request) {
         name: name || null,
         email,
         password: hashedPassword,
+        agreedToTermsAt: new Date(),
+        agreedTermsVersion: LEGAL_VERSION,
+        agreedFromIp: ip ?? null,
       },
     });
 

@@ -5,6 +5,7 @@ import Yandex from "next-auth/providers/yandex";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { LEGAL_VERSION } from "./legal-version";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -63,11 +64,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         data: { userId: user.id! },
       }).catch(() => {}); // silently ignore if already exists
 
-      // Mark email as verified for OAuth users (provider already verified it)
+      // Mark email as verified for OAuth users (provider already verified it).
+      // Also record consent: by signing in via OAuth the user agrees to
+      // Terms and Privacy (the consent UI is shown on the auth screen).
       if (user.id) {
         await prisma.user.update({
           where: { id: user.id },
-          data: { emailVerified: new Date() },
+          data: {
+            emailVerified: new Date(),
+            agreedToTermsAt: new Date(),
+            agreedTermsVersion: LEGAL_VERSION,
+          },
         }).catch(() => {});
       }
     },
