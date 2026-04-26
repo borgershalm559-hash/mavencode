@@ -11,7 +11,7 @@ export default function TermsPage() {
     <LegalPage
       eyebrow="Пользовательское соглашение"
       title="Условия использования"
-      updatedAt="24 апреля 2026"
+      updatedAt="26 апреля 2026"
     >
       <p>
         Настоящие Условия регулируют использование платформы <strong>MavenCode</strong> — онлайн-сервиса
@@ -99,8 +99,10 @@ export default function TermsPage() {
 
       <h2>Контакты</h2>
       <p>
-        Вопросы по Условиям — <code>legal@mavencode.dev</code>. Общая поддержка —
-        <code> support@mavencode.dev</code>.
+        Платформой <strong>MavenCode</strong> управляет физическое лицо —{" "}
+        <strong>Балуевский Андрей Сергеевич</strong>. Все вопросы по условиям использования,
+        обращения по поводу учётной записи и общая поддержка —{" "}
+        <code>davidsuxcess365@gmail.com</code>.
       </p>
     </LegalPage>
   );
