@@ -2,17 +2,23 @@
 
 import { useState } from "react";
 import useSWR from "swr";
+import Link from "next/link";
+import Image from "next/image";
 import { fetcher } from "@/lib/fetcher";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ShieldCheck, ChevronRight, Flame } from "lucide-react";
 
 interface UserRow {
   id: string;
   name: string | null;
   email: string;
+  image: string | null;
   role: string;
   level: number;
   xp: number;
+  streak: number;
   createdAt: string;
+  agreedToTermsAt: string | null;
+  completedLessons: number;
 }
 
 interface UsersResponse {
@@ -22,81 +28,116 @@ interface UsersResponse {
   totalPages: number;
 }
 
+const ROLE_FILTERS = [
+  { key: "all", label: "Все" },
+  { key: "user", label: "Студенты" },
+  { key: "admin", label: "Админы" },
+] as const;
+
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "user" | "admin">("all");
   const [page, setPage] = useState(1);
-  const { data, isLoading, mutate } = useSWR<UsersResponse>(
-    `/api/admin/users?search=${encodeURIComponent(search)}&page=${page}`,
+  const { data, isLoading } = useSWR<UsersResponse>(
+    `/api/admin/users?search=${encodeURIComponent(search)}&role=${roleFilter}&page=${page}`,
     fetcher
   );
 
-  const toggleRole = async (user: UserRow) => {
-    const newRole = user.role === "admin" ? "user" : "admin";
-    if (!confirm(`Сменить роль ${user.email} на "${newRole}"?`)) return;
-    await fetch(`/api/admin/users/${user.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role: newRole }),
-    });
-    mutate();
-  };
-
   return (
-    <div>
-      <h1 className="text-lg font-bold font-mono uppercase tracking-[0.15em] text-white/90 mb-6">Пользователи</h1>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-lg font-bold font-mono uppercase tracking-[0.15em] text-white/90">Пользователи</h1>
+        <p className="text-[12px] text-white/40 font-mono mt-1">{data?.total ?? 0} аккаунтов</p>
+      </div>
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
-        <input
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Поиск по имени или email..."
-          className="w-full h-10 pl-10 pr-3 bg-surface border-2 border-white/[0.07] text-sm text-white placeholder:text-white/25 outline-none focus:border-[#10B981]/40 font-mono"
-        />
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[260px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+          <input
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Поиск по имени или email..."
+            className="w-full h-10 pl-10 pr-3 bg-[#0B0B0C] border-2 border-white/[0.08] text-sm text-white placeholder:text-white/25 outline-none focus:border-[#10B981]/40 font-mono"
+          />
+        </div>
+        <div className="flex gap-2">
+          {ROLE_FILTERS.map((f) => {
+            const active = roleFilter === f.key;
+            return (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => { setRoleFilter(f.key); setPage(1); }}
+                className="font-mono text-[11px] px-3 py-1.5"
+                style={{
+                  border: `2px solid ${active ? "#10B981" : "rgba(255,255,255,0.08)"}`,
+                  background: active ? "rgba(16,185,129,0.1)" : "transparent",
+                  color: active ? "#10B981" : "rgba(255,255,255,0.55)",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  height: 40,
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center h-64"><Loader2 className="w-5 h-5 text-[#10B981] animate-spin" /></div>
       ) : (
         <>
-          <div className="border-2 border-white/[0.07] overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-white/[0.03] border-b-2 border-white/[0.05]">
-                  <th className="px-4 py-3 text-left text-xs text-white/40 font-mono uppercase tracking-[0.15em]">Пользователь</th>
-                  <th className="px-4 py-3 text-left text-xs text-white/40 font-mono uppercase tracking-[0.15em]">Email</th>
-                  <th className="px-4 py-3 text-left text-xs text-white/40 font-mono uppercase tracking-[0.15em]">Роль</th>
-                  <th className="px-4 py-3 text-left text-xs text-white/40 font-mono uppercase tracking-[0.15em]">Уровень</th>
-                  <th className="px-4 py-3 text-right text-xs text-white/40 font-mono uppercase tracking-[0.15em]">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(data?.users || []).map((user) => (
-                  <tr key={user.id} className="border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors">
-                    <td className="px-4 py-3 text-sm text-white/80 font-mono">{user.name || "—"}</td>
-                    <td className="px-4 py-3 text-sm text-white/55 font-mono">{user.email}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 border text-xs font-mono ${user.role === "admin" ? "border-[#10B981]/25 bg-[#10B981]/[0.08] text-[#10B981]" : "border-white/[0.05] bg-white/[0.03] text-white/45"}`}>
-                        {user.role}
+          <div className="border-2 border-white/[0.07] bg-[#0F1011]">
+            {(data?.users || []).length === 0 ? (
+              <div className="p-10 text-center font-mono text-[12px] text-white/40">Никого не нашли</div>
+            ) : (
+              (data?.users || []).map((user) => (
+                <Link
+                  key={user.id}
+                  href={`/admin/users/${user.id}`}
+                  className="flex items-center gap-3 px-4 py-3 border-b-2 border-white/[0.05] last:border-b-0 hover:bg-white/[0.02] group"
+                >
+                  <div className="w-9 h-9 border-2 border-white/[0.08] bg-[#0B0B0C] flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {user.image ? (
+                      <Image src={user.image} alt="" width={36} height={36} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[14px] font-mono text-white/55">
+                        {(user.name || user.email).charAt(0).toUpperCase()}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-white/55 font-mono">Lv.{user.level}</td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => toggleRole(user)}
-                        className="px-2.5 py-1 border border-[#10B981]/20 text-xs font-mono text-[#10B981]/80 hover:text-[#10B981] hover:bg-[#10B981]/[0.06] transition-all"
-                      >
-                        {user.role === "admin" ? "→ user" : "→ admin"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] text-white truncate">{user.name || "—"}</span>
+                      {user.role === "admin" && (
+                        <span className="inline-flex items-center gap-1 font-mono text-[9px] text-[#10B981]" style={{ letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 700 }}>
+                          <ShieldCheck size={10} /> Админ
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[12px] text-white/45 truncate font-mono">{user.email}</div>
+                  </div>
+                  <div className="hidden md:flex items-center gap-4 text-[11px] font-mono">
+                    <span className="text-white/55">Lv.{user.level}</span>
+                    <span className="text-white/45">{user.xp} XP</span>
+                    {user.streak > 0 && (
+                      <span className="text-orange-400/80 inline-flex items-center gap-1">
+                        <Flame size={11} /> {user.streak}
+                      </span>
+                    )}
+                    <span className="text-white/35 w-20 text-right">{user.completedLessons} уроков</span>
+                  </div>
+                  <ChevronRight size={16} className="text-white/30 group-hover:text-[#10B981]" />
+                </Link>
+              ))
+            )}
           </div>
 
           {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="flex items-center justify-center gap-2 mt-2">
               {Array.from({ length: data.totalPages }, (_, i) => (
                 <button
                   key={i}
