@@ -16,12 +16,13 @@ export async function GET(
 
   const { id } = await params;
 
-  const lesson = await prisma.lesson.findUnique({
-    where: { id },
+  const lesson = await prisma.lesson.findFirst({
+    where: { id, isPublished: true, course: { isPublished: true } },
     include: {
       course: {
         include: {
           lessons: {
+            where: { isPublished: true },
             orderBy: { order: "asc" },
             select: { id: true, order: true, title: true, progress: { where: { userId }, select: { completed: true } } },
           },

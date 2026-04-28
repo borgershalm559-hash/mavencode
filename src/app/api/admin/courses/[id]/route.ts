@@ -36,6 +36,10 @@ export async function PATCH(
       ...(body.tags !== undefined && { tags: body.tags }),
       ...(body.difficulty !== undefined && { difficulty: body.difficulty }),
       ...(body.estimatedHours !== undefined && { estimatedHours: body.estimatedHours }),
+      ...(body.isPublished !== undefined && { isPublished: !!body.isPublished }),
+      ...(body.image !== undefined && { image: body.image || null }),
+      ...(body.iconText !== undefined && { iconText: body.iconText || null }),
+      ...(body.color !== undefined && { color: body.color || null }),
     },
   });
 

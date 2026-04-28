@@ -12,6 +12,7 @@ interface CourseRow {
   title: string;
   difficulty: string;
   tags: string[];
+  isPublished: boolean;
   _count: { lessons: number };
   createdAt: string;
 }
@@ -110,6 +111,23 @@ export default function AdminCoursesPage() {
             key: "tags",
             header: "Теги",
             render: (item: CourseRow) => item.tags.join(", "),
+          },
+          {
+            key: "status",
+            header: "Статус",
+            render: (item: CourseRow) => (
+              <span
+                className="font-mono text-[9px] px-1.5 py-0.5 border"
+                style={{
+                  letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700,
+                  color: item.isPublished ? "#10B981" : "rgba(255,255,255,0.4)",
+                  borderColor: item.isPublished ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.1)",
+                  background: item.isPublished ? "rgba(16,185,129,0.06)" : "transparent",
+                }}
+              >
+                {item.isPublished ? "опубликован" : "черновик"}
+              </span>
+            ),
           },
         ]}
         data={data || []}

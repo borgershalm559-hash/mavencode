@@ -22,10 +22,14 @@ export async function POST(req: Request) {
   const course = await prisma.course.create({
     data: {
       title: body.title,
-      description: body.description,
+      description: body.description ?? "",
       tags: body.tags || [],
       difficulty: body.difficulty || "beginner",
       estimatedHours: body.estimatedHours || 1,
+      isPublished: body.isPublished ?? false, // новые курсы - драфты по умолчанию
+      image: body.image || null,
+      iconText: body.iconText || null,
+      color: body.color || null,
     },
   });
 

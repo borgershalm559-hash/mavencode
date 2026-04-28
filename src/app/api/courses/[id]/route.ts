@@ -11,10 +11,11 @@ export async function GET(
 
   const { id } = await params;
 
-  const course = await prisma.course.findUnique({
-    where: { id },
+  const course = await prisma.course.findFirst({
+    where: { id, isPublished: true },
     include: {
       lessons: {
+        where: { isPublished: true },
         orderBy: { order: "asc" },
         include: {
           progress: {

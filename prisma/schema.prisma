@@ -83,8 +83,12 @@ model Course {
   tags           String[] @default([])
   difficulty     String   @default("beginner")
   estimatedHours Int      @default(1)
+  isPublished    Boolean  @default(true)
+  iconText       String?
+  color          String?
   lessons        Lesson[]
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt @default(now())
 }
 
 model Lesson {
@@ -101,7 +105,7 @@ model Lesson {
   xpReward    Int        @default(100)
   isPublished Boolean    @default(true)
   courseId    String
-  course      Course     @relation(fields: [courseId], references: [id])
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
   progress    Progress[]
 }
 

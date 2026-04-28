@@ -7,9 +7,13 @@ export async function GET() {
   if (error) return error;
 
   const courses = await prisma.course.findMany({
+    where: { isPublished: true },
     include: {
-      _count: { select: { lessons: true } },
+      _count: {
+        select: { lessons: { where: { isPublished: true } } },
+      },
       lessons: {
+        where: { isPublished: true },
         select: {
           id: true,
           progress: {
