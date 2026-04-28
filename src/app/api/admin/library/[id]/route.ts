@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import { getAdminUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const [, error] = await getAdminUserId();
+  if (error) return error;
+
+  const { id } = await params;
+  const item = await prisma.libraryResource.findUnique({ where: { id } });
+  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(item);
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
