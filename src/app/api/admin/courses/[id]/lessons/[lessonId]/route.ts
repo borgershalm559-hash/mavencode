@@ -53,6 +53,7 @@ export async function PATCH(
       ...(body.solution !== undefined && { solution: body.solution }),
       ...(body.tests !== undefined && { tests: body.tests }),
       ...(body.hints !== undefined && { hints: body.hints }),
+      ...(body.isPublished !== undefined && { isPublished: !!body.isPublished }),
       ...(xpReward !== undefined && { xpReward }),
     },
   });

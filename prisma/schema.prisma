@@ -99,6 +99,7 @@ model Lesson {
   tests       String?    @db.Text
   hints       String?    @db.Text
   xpReward    Int        @default(100)
+  isPublished Boolean    @default(true)
   courseId    String
   course      Course     @relation(fields: [courseId], references: [id])
   progress    Progress[]

@@ -3,7 +3,7 @@
 import { useState, use } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
-import { DataTable } from "@/components/admin/data-table";
+import { LessonListSortable } from "@/components/admin/lesson-list-sortable";
 import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +21,7 @@ interface CourseData {
     type: string;
     language: string;
     xpReward: number;
+    isPublished?: boolean;
   }[];
 }
 
@@ -164,15 +165,10 @@ export default function AdminCourseDetailPage({
         </div>
       )}
 
-      <DataTable
-        columns={[
-          { key: "order", header: "#" },
-          { key: "title", header: "Название" },
-          { key: "type", header: "Тип" },
-          { key: "language", header: "Язык" },
-          { key: "xpReward", header: "XP" },
-        ]}
-        data={course.lessons}
+      <LessonListSortable
+        courseId={id}
+        lessons={course.lessons}
+        onReorder={() => mutate()}
         onDelete={deleteLesson}
       />
     </div>
