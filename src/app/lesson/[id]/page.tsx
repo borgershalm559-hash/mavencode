@@ -16,6 +16,7 @@ import { ConsoleOutput } from "@/components/lesson/console-output";
 import { HintsDrawer } from "@/components/lesson/hints-drawer";
 import { QuizTask } from "@/components/lesson/quiz-task";
 import { PreviewPanel } from "@/components/lesson/preview-panel";
+import { Splitter } from "@/components/lesson/splitter";
 import type { RunResult, Test } from "@/components/lesson/runners/types";
 
 interface LessonStatus {
@@ -85,11 +86,18 @@ export default function LessonPage({
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [previewHeight, setPreviewHeight] = useState(240);
+  const [previewWidthPct, setPreviewWidthPct] = useState(50);
+  const splitContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Restore focus-mode preference once on mount.
+  // Restore preferences once on mount.
   useEffect(() => {
     if (typeof window === "undefined") return;
     setFocusMode(window.localStorage.getItem("lesson-focus-mode") === "1");
+    const ph = parseInt(window.localStorage.getItem("lesson-preview-height") || "");
+    if (Number.isFinite(ph) && ph >= 120 && ph <= 800) setPreviewHeight(ph);
+    const pw = parseFloat(window.localStorage.getItem("lesson-preview-width-pct") || "");
+    if (Number.isFinite(pw) && pw >= 20 && pw <= 80) setPreviewWidthPct(pw);
   }, []);
 
   const toggleFocus = useCallback(() => {
@@ -99,6 +107,45 @@ export default function LessonPage({
         window.localStorage.setItem("lesson-focus-mode", next ? "1" : "0");
       }
       return next;
+    });
+  }, []);
+
+  const handlePreviewHeightDelta = useCallback((delta: number) => {
+    // The handle sits ABOVE the preview row, so dragging UP (negative delta)
+    // should make preview LARGER. Positive delta = preview smaller.
+    setPreviewHeight((prev) => {
+      const next = Math.max(120, Math.min(800, prev - delta));
+      return next;
+    });
+  }, []);
+
+  const handlePreviewHeightEnd = useCallback(() => {
+    if (typeof window === "undefined") return;
+    setPreviewHeight((prev) => {
+      window.localStorage.setItem("lesson-preview-height", String(prev));
+      return prev;
+    });
+  }, []);
+
+  const handlePreviewWidthDelta = useCallback((delta: number) => {
+    const container = splitContainerRef.current;
+    if (!container) return;
+    const totalWidth = container.getBoundingClientRect().width;
+    if (totalWidth <= 0) return;
+    setPreviewWidthPct((prev) => {
+      // Splitter sits between editor (left) and preview (right). Drag right
+      // (positive delta) shrinks preview; drag left grows preview.
+      const previewPx = (prev / 100) * totalWidth - delta;
+      const next = Math.max(20, Math.min(80, (previewPx / totalWidth) * 100));
+      return next;
+    });
+  }, []);
+
+  const handlePreviewWidthEnd = useCallback(() => {
+    if (typeof window === "undefined") return;
+    setPreviewWidthPct((prev) => {
+      window.localStorage.setItem("lesson-preview-width-pct", String(prev.toFixed(1)));
+      return prev;
     });
   }, []);
 
@@ -325,11 +372,12 @@ export default function LessonPage({
       {focusMode && !isQuiz ? (
         /* FOCUS MODE — theory hidden, editor takes the spotlight. */
         isHtml ? (
-          /* HTML focus: editor | preview, console as bottom strip. */
+          /* HTML focus: editor | splitter | preview, console as bottom strip. */
           <div
+            ref={splitContainerRef}
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: `${100 - previewWidthPct}% 6px ${previewWidthPct}%`,
               gridTemplateRows: "1fr auto",
               background: "#0E0E10",
             }}
@@ -341,7 +389,6 @@ export default function LessonPage({
                 gridRow: 1,
                 display: "grid",
                 gridTemplateRows: "auto 1fr",
-                borderRight: "2px solid rgba(255,255,255,0.07)",
                 minHeight: 0,
                 overflow: "hidden",
               }}
@@ -357,10 +404,17 @@ export default function LessonPage({
                 onToggleFocus={toggleFocus}
               />
             </div>
-            <div style={{ gridColumn: 2, gridRow: 1, minHeight: 0, overflow: "hidden" }}>
+            <div style={{ gridColumn: 2, gridRow: 1 }}>
+              <Splitter
+                direction="horizontal"
+                onDelta={handlePreviewWidthDelta}
+                onEnd={handlePreviewWidthEnd}
+              />
+            </div>
+            <div style={{ gridColumn: 3, gridRow: 1, minHeight: 0, overflow: "hidden" }}>
               <PreviewPanel code={code} />
             </div>
-            <div style={{ gridColumn: "1 / span 2", gridRow: 2 }}>
+            <div style={{ gridColumn: "1 / span 3", gridRow: 2 }}>
               <ConsoleOutput result={runResult} isRunning={isRunning} />
             </div>
           </div>
@@ -406,7 +460,9 @@ export default function LessonPage({
           <div
             style={{
               display: "grid",
-              gridTemplateRows: isHtml && !isQuiz ? "auto 1fr 240px auto" : "auto 1fr auto",
+              gridTemplateRows: isHtml && !isQuiz
+                ? `auto 1fr 6px ${previewHeight}px auto`
+                : "auto 1fr auto",
               background: "#0E0E10",
             }}
             className="min-h-0 overflow-hidden"
@@ -431,6 +487,13 @@ export default function LessonPage({
                   focusMode={focusMode}
                   onToggleFocus={toggleFocus}
                 />
+                {isHtml && (
+                  <Splitter
+                    direction="vertical"
+                    onDelta={handlePreviewHeightDelta}
+                    onEnd={handlePreviewHeightEnd}
+                  />
+                )}
                 {isHtml && <PreviewPanel code={code} />}
                 <ConsoleOutput result={runResult} isRunning={isRunning} />
               </>
