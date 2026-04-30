@@ -1,8 +1,13 @@
 "use client";
 
+import { Children, cloneElement, isValidElement, type ReactElement } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
+
+interface ListItemMarker {
+  orderedIndex?: number;
+}
 
 /**
  * Shared markdown component map used by both:
@@ -74,28 +79,40 @@ export const theoryMarkdownComponents: Components = {
       {children}
     </ul>
   ),
-  ol: ({ children }) => (
-    <ol
-      style={{
-        margin: "0 0 16px 18px",
-        padding: 0,
-        listStyle: "decimal",
-        display: "grid",
-        gap: 6,
-        color: "rgba(255,255,255,0.78)",
-        fontSize: 15.5,
-        lineHeight: 1.65,
-      }}
-    >
-      {children}
-    </ol>
-  ),
-  li: ({ children }) => (
-    <li style={{ display: "flex", gap: 12, fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.78)" }}>
-      <span style={{ marginTop: 9, width: 6, height: 6, background: "#10B981", flexShrink: 0 }} />
-      <span>{children}</span>
-    </li>
-  ),
+  ol: ({ children }) => {
+    let counter = 0;
+    const numbered = Children.map(children, (child) => {
+      if (!isValidElement(child)) return child;
+      counter += 1;
+      return cloneElement(child as ReactElement<ListItemMarker>, { orderedIndex: counter });
+    });
+    return (
+      <ol style={{ margin: "0 0 16px", padding: 0, listStyle: "none", display: "grid", gap: 6 }}>
+        {numbered}
+      </ol>
+    );
+  },
+  li: ({ children, ...rest }: { children?: React.ReactNode } & ListItemMarker) => {
+    if (typeof rest.orderedIndex === "number") {
+      return (
+        <li style={{ display: "flex", gap: 12, fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.78)" }}>
+          <span
+            className="font-mono"
+            style={{ color: "#10B981", flexShrink: 0, minWidth: 22, fontWeight: 600 }}
+          >
+            {rest.orderedIndex}.
+          </span>
+          <span>{children}</span>
+        </li>
+      );
+    }
+    return (
+      <li style={{ display: "flex", gap: 12, fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.78)" }}>
+        <span style={{ marginTop: 9, width: 6, height: 6, background: "#10B981", flexShrink: 0 }} />
+        <span>{children}</span>
+      </li>
+    );
+  },
   code: ({ className, children }) => {
     const isBlock = className?.includes("language-");
     if (isBlock) {
