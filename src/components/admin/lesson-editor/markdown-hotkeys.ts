@@ -137,16 +137,32 @@ export function cmdLineStart(prefix: string) {
   return (view: EditorView): boolean => {
     const { state } = view;
     const changes: ChangeSpec[] = [];
+    // Decide once per call: if EVERY line in the range already starts with the
+    // prefix, treat the click as a toggle-off and strip it. Otherwise, add the
+    // prefix to lines that don't have it. This makes a second click cancel the
+    // formatting applied by the first click.
+    const visitedLines = new Set<number>();
+    let allHavePrefix = true;
     state.selection.ranges.forEach((range) => {
       const startLine = state.doc.lineAt(range.from).number;
       const endLine = state.doc.lineAt(range.to).number;
       for (let n = startLine; n <= endLine; n++) {
+        if (visitedLines.has(n)) continue;
+        visitedLines.add(n);
         const line = state.doc.line(n);
-        if (!line.text.startsWith(prefix)) {
-          changes.push({ from: line.from, insert: prefix });
-        }
+        if (!line.text.startsWith(prefix)) allHavePrefix = false;
       }
     });
+
+    visitedLines.forEach((n) => {
+      const line = state.doc.line(n);
+      if (allHavePrefix) {
+        changes.push({ from: line.from, to: line.from + prefix.length, insert: "" });
+      } else if (!line.text.startsWith(prefix)) {
+        changes.push({ from: line.from, insert: prefix });
+      }
+    });
+
     view.dispatch({ changes, scrollIntoView: true });
     view.focus();
     return true;

@@ -192,6 +192,7 @@ export function MarkdownEditor({ value, onChange, context = "lesson", onSave }: 
           <button
             type="button"
             title="Блок кода (Ctrl+Shift+C)"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={tbCmd(cmdCodeBlock)}
             className="font-mono text-[10px] px-2 h-7 text-white/55 hover:text-white hover:bg-white/[0.06]"
           >&lt;/&gt; code</button>
@@ -282,6 +283,10 @@ function ToolbarBtn({ title, onClick, children }: ToolbarBtnProps) {
     <button
       type="button"
       title={title}
+      // Prevent the button from stealing focus from the editor; without this
+      // the selection collapses on mousedown and toggle-off detection loses
+      // its surrounding markers.
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className="size-7 grid place-items-center text-white/55 hover:text-white hover:bg-white/[0.06] transition-colors"
     >
