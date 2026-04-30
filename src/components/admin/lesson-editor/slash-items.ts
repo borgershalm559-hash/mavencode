@@ -1,4 +1,5 @@
 import type { EditorView } from "@codemirror/view";
+import { EditorSelection } from "@codemirror/state";
 import type { LucideIcon } from "lucide-react";
 import {
   Heading1, Heading2, Heading3, Code2, Quote, List, ListOrdered, Table, Minus, Image as ImageIcon,
@@ -21,11 +22,10 @@ export interface SlashHelpers {
 }
 
 function replaceWith(view: EditorView, from: number, to: number, text: string, caretOffset?: number): void {
+  const cursorPos = caretOffset !== undefined ? from + caretOffset : from + text.length;
   view.dispatch({
     changes: { from, to, insert: text },
-    selection: caretOffset !== undefined
-      ? ({ anchor: from + caretOffset } as never)
-      : ({ anchor: from + text.length } as never),
+    selection: EditorSelection.cursor(cursorPos),
     scrollIntoView: true,
   });
   view.focus();

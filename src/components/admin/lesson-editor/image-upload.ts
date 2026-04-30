@@ -1,4 +1,5 @@
 import type { EditorView } from "@codemirror/view";
+import { EditorSelection } from "@codemirror/state";
 
 export type EditorContext = "lesson" | "news" | "library";
 
@@ -40,7 +41,7 @@ export async function insertImageWithUpload(
 
   view.dispatch({
     changes: { from: pos, to: pos, insert: placeholder },
-    selection: { anchor: pos + placeholder.length } as never,
+    selection: EditorSelection.cursor(pos + placeholder.length),
   });
 
   const replaceToken = (replacement: string) => {

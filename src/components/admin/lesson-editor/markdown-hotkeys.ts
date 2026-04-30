@@ -1,42 +1,40 @@
 import type { EditorView, KeyBinding } from "@codemirror/view";
-import type { ChangeSpec } from "@codemirror/state";
+import { EditorSelection, type ChangeSpec } from "@codemirror/state";
 
 type Wrap = { before: string; after: string; placeholder: string };
 
 function applyWrap(view: EditorView, wrap: Wrap): boolean {
   const { state } = view;
-  const changes: ChangeSpec[] = [];
-  const newSelections: { anchor: number; head: number }[] = [];
+  // Process the first range only — covers the typical hotkey case and avoids
+  // the complexity of mapping multiple selections through compound changes.
+  const range = state.selection.main;
+  const empty = range.empty;
+  const selected = empty ? wrap.placeholder : state.sliceDoc(range.from, range.to);
 
-  state.selection.ranges.forEach((range) => {
-    const empty = range.empty;
-    const selected = empty ? wrap.placeholder : state.sliceDoc(range.from, range.to);
+  // Toggle off: if surrounding chars already match wrap.before/after, strip them
+  const beforeStart = range.from - wrap.before.length;
+  const afterEnd = range.to + wrap.after.length;
+  const hasBefore = beforeStart >= 0 && state.sliceDoc(beforeStart, range.from) === wrap.before;
+  const hasAfter = afterEnd <= state.doc.length && state.sliceDoc(range.to, afterEnd) === wrap.after;
 
-    // Toggle off: if surrounding chars already match wrap.before/after, strip them
-    const beforeStart = range.from - wrap.before.length;
-    const afterEnd = range.to + wrap.after.length;
-    const hasBefore = beforeStart >= 0 && state.sliceDoc(beforeStart, range.from) === wrap.before;
-    const hasAfter = afterEnd <= state.doc.length && state.sliceDoc(range.to, afterEnd) === wrap.after;
+  if (!empty && hasBefore && hasAfter) {
+    view.dispatch({
+      changes: [
+        { from: beforeStart, to: range.from, insert: "" },
+        { from: range.to, to: afterEnd, insert: "" },
+      ],
+      selection: EditorSelection.range(beforeStart, range.to - wrap.before.length),
+      scrollIntoView: true,
+    });
+    view.focus();
+    return true;
+  }
 
-    if (!empty && hasBefore && hasAfter) {
-      changes.push({ from: beforeStart, to: range.from, insert: "" });
-      changes.push({ from: range.to, to: afterEnd, insert: "" });
-      newSelections.push({
-        anchor: beforeStart,
-        head: range.to - wrap.before.length,
-      });
-      return;
-    }
-
-    const insertText = wrap.before + selected + wrap.after;
-    changes.push({ from: range.from, to: range.to, insert: insertText });
-    const start = range.from + wrap.before.length;
-    newSelections.push({ anchor: start, head: start + selected.length });
-  });
-
+  const insertText = wrap.before + selected + wrap.after;
+  const start = range.from + wrap.before.length;
   view.dispatch({
-    changes,
-    selection: { ranges: newSelections.map((r) => ({ anchor: r.anchor, head: r.head })) } as never,
+    changes: { from: range.from, to: range.to, insert: insertText },
+    selection: EditorSelection.range(start, start + selected.length),
     scrollIntoView: true,
   });
   view.focus();
@@ -80,7 +78,7 @@ function insertCodeBlock(view: EditorView): boolean {
   const langPos = range.from + 3; // caret after opening fence to type lang
   view.dispatch({
     changes: { from: range.from, to: range.to, insert: block },
-    selection: { anchor: langPos } as never,
+    selection: EditorSelection.cursor(langPos),
     scrollIntoView: true,
   });
   view.focus();
@@ -95,8 +93,7 @@ function insertLink(view: EditorView): boolean {
   const inserted = `[${label}](url)`;
   view.dispatch({
     changes: { from: range.from, to: range.to, insert: inserted },
-    // place caret at "url" so the user can paste
-    selection: { anchor: range.from + label.length + 3, head: range.from + label.length + 6 } as never,
+    selection: EditorSelection.range(range.from + label.length + 3, range.from + label.length + 6),
     scrollIntoView: true,
   });
   view.focus();
