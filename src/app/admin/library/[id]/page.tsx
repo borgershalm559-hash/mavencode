@@ -221,7 +221,7 @@ export default function AdminLibraryEditorPage({
         >
           § Содержание
         </h2>
-        <MarkdownEditor value={draft.body} onChange={(body) => update("body", body)} />
+        <MarkdownEditor value={draft.body} onChange={(body) => update("body", body)} context="library" />
       </div>
 
       {/* Danger zone */}

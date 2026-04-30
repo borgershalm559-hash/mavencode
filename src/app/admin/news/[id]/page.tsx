@@ -239,7 +239,7 @@ export default function AdminNewsEditorPage({
         >
           § Текст новости
         </h2>
-        <MarkdownEditor value={draft.body} onChange={(body) => update("body", body)} />
+        <MarkdownEditor value={draft.body} onChange={(body) => update("body", body)} context="news" />
       </div>
 
       {/* Danger zone */}

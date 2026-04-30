@@ -145,7 +145,7 @@ function LoadedEditor({
 
       <MetadataBar draft={draft} onChange={update} />
 
-      <MarkdownEditor value={draft.content} onChange={(content) => update({ content })} />
+      <MarkdownEditor value={draft.content} onChange={(content) => update({ content })} context="lesson" />
 
       {draft.type !== "quiz" && (
         <CodePair
