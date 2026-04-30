@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { RotateCcw, Loader2 } from "lucide-react";
+import { RotateCcw, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { onPyodideLoadingStatus, type PyodideLoadingStatus } from "./runners/python-runner";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -29,6 +29,8 @@ interface CodeEditorProps {
   onReset: () => void;
   isRunning: boolean;
   readOnly?: boolean;
+  focusMode?: boolean;
+  onToggleFocus?: () => void;
 }
 
 export function CodeEditor({
@@ -39,6 +41,8 @@ export function CodeEditor({
   onReset,
   isRunning,
   readOnly = false,
+  focusMode = false,
+  onToggleFocus,
 }: CodeEditorProps) {
   const editorRef = useRef<unknown>(null);
   const [pyodideStatus, setPyodideStatus] = useState<PyodideLoadingStatus | null>(null);
@@ -92,6 +96,27 @@ export function CodeEditor({
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
+          {onToggleFocus && (
+            <button
+              onClick={onToggleFocus}
+              title={focusMode ? "Показать теорию (Esc)" : "Скрыть теорию и развернуть редактор"}
+              className="font-mono hidden lg:inline-flex"
+              style={{
+                alignItems: "center",
+                gap: 6,
+                padding: "7px 12px",
+                border: "2px solid transparent",
+                background: "transparent",
+                color: focusMode ? "rgba(16,185,129,0.85)" : "rgba(255,255,255,0.45)",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+              }}
+            >
+              {focusMode ? <PanelLeftOpen size={13} /> : <PanelLeftClose size={13} />}
+              {focusMode ? "Обычный" : "Фокус"}
+            </button>
+          )}
           <button
             onClick={onReset}
             className="font-mono"

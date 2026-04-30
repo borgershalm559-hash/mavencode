@@ -84,6 +84,33 @@ export default function LessonPage({
   const [submitResult, setSubmitResult] = useState<SubmitResponse | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+
+  // Restore focus-mode preference once on mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setFocusMode(window.localStorage.getItem("lesson-focus-mode") === "1");
+  }, []);
+
+  const toggleFocus = useCallback(() => {
+    setFocusMode((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("lesson-focus-mode", next ? "1" : "0");
+      }
+      return next;
+    });
+  }, []);
+
+  // Esc closes focus mode for quick exit.
+  useEffect(() => {
+    if (!focusMode) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") toggleFocus();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusMode, toggleFocus]);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftAbortRef = useRef<AbortController | null>(null);
   const codeInitialized = useRef(false);
@@ -295,41 +322,30 @@ export default function LessonPage({
         courseTitle={data.course.title}
       />
 
-      {/* Main split — 50/50 grid, fills remaining viewport, panels scroll internally */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-        }}
-        className="lesson-main-split flex-1 min-h-0"
-      >
-        {/* LEFT — Theory (scrolls internally) */}
-        <div
-          style={{ borderRight: "2px solid rgba(255,255,255,0.07)" }}
-          className="overflow-y-auto custom-scrollbar min-h-0"
-        >
-          <TheoryPanel content={data.lesson.content} />
-        </div>
-
-        {/* RIGHT — Editor + (Preview for HTML) + Console */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateRows: isHtml && !isQuiz ? "auto 1fr 240px auto" : "auto 1fr auto",
-            background: "#0E0E10",
-          }}
-          className="min-h-0 overflow-hidden"
-        >
-          {isQuiz ? (
-            <div style={{ gridRow: "1 / span 3" }}>
-              <QuizTask
-                tests={data.lesson.tests}
-                onResult={handleQuizResult}
-                isRunning={isRunning}
-              />
-            </div>
-          ) : (
-            <>
+      {focusMode && !isQuiz ? (
+        /* FOCUS MODE — theory hidden, editor takes the spotlight. */
+        isHtml ? (
+          /* HTML focus: editor | preview, console as bottom strip. */
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gridTemplateRows: "1fr auto",
+              background: "#0E0E10",
+            }}
+            className="lesson-main-split flex-1 min-h-0"
+          >
+            <div
+              style={{
+                gridColumn: 1,
+                gridRow: 1,
+                display: "grid",
+                gridTemplateRows: "auto 1fr",
+                borderRight: "2px solid rgba(255,255,255,0.07)",
+                minHeight: 0,
+                overflow: "hidden",
+              }}
+            >
               <CodeEditor
                 code={code}
                 language={data.lesson.language}
@@ -337,13 +353,91 @@ export default function LessonPage({
                 onRun={handleRun}
                 onReset={handleReset}
                 isRunning={isRunning}
+                focusMode
+                onToggleFocus={toggleFocus}
               />
-              {isHtml && <PreviewPanel code={code} />}
+            </div>
+            <div style={{ gridColumn: 2, gridRow: 1, minHeight: 0, overflow: "hidden" }}>
+              <PreviewPanel code={code} />
+            </div>
+            <div style={{ gridColumn: "1 / span 2", gridRow: 2 }}>
               <ConsoleOutput result={runResult} isRunning={isRunning} />
-            </>
-          )}
+            </div>
+          </div>
+        ) : (
+          /* Code-only focus: editor full width, console below. */
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: "auto 1fr auto",
+              background: "#0E0E10",
+            }}
+            className="lesson-main-split flex-1 min-h-0"
+          >
+            <CodeEditor
+              code={code}
+              language={data.lesson.language}
+              onChange={handleCodeChange}
+              onRun={handleRun}
+              onReset={handleReset}
+              isRunning={isRunning}
+              focusMode
+              onToggleFocus={toggleFocus}
+            />
+            <ConsoleOutput result={runResult} isRunning={isRunning} />
+          </div>
+        )
+      ) : (
+        /* DEFAULT LAYOUT — theory on the left, editor stack on the right. */
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+          }}
+          className="lesson-main-split flex-1 min-h-0"
+        >
+          <div
+            style={{ borderRight: "2px solid rgba(255,255,255,0.07)" }}
+            className="overflow-y-auto custom-scrollbar min-h-0"
+          >
+            <TheoryPanel content={data.lesson.content} />
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: isHtml && !isQuiz ? "auto 1fr 240px auto" : "auto 1fr auto",
+              background: "#0E0E10",
+            }}
+            className="min-h-0 overflow-hidden"
+          >
+            {isQuiz ? (
+              <div style={{ gridRow: "1 / span 3" }}>
+                <QuizTask
+                  tests={data.lesson.tests}
+                  onResult={handleQuizResult}
+                  isRunning={isRunning}
+                />
+              </div>
+            ) : (
+              <>
+                <CodeEditor
+                  code={code}
+                  language={data.lesson.language}
+                  onChange={handleCodeChange}
+                  onRun={handleRun}
+                  onReset={handleReset}
+                  isRunning={isRunning}
+                  focusMode={focusMode}
+                  onToggleFocus={toggleFocus}
+                />
+                {isHtml && <PreviewPanel code={code} />}
+                <ConsoleOutput result={runResult} isRunning={isRunning} />
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Footer — always visible */}
       <div
