@@ -24,11 +24,9 @@ export function Sidebar({
   active, onNavigate, profile, collapsed, onToggle,
   coursesCount, newsCount,
 }: SidebarProps) {
-  // Dynamic badges from real data; "live" is static for PvP.
   const BADGES: Record<string, string> = {
     ...(typeof coursesCount === "number" && coursesCount > 0 ? { courses: String(coursesCount) } : {}),
     ...(typeof newsCount === "number" && newsCount > 0 ? { news: String(newsCount) } : {}),
-    pvp: "live",
   };
 
   const xpPercent = profile
