@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
-import { GraduationCap, BookOpen, ChevronRight, Trophy, Zap, Star } from "lucide-react";
+import { GraduationCap, BookOpen, ChevronRight, Trophy, Zap } from "lucide-react";
 
 interface PublicStats {
   students: number;
@@ -57,23 +57,6 @@ const LANGS = [
   { name: "Алгоритмы",  color: G },
 ];
 
-const REVIEWS = [
-  {
-    name: "Алексей М.",
-    role: "Junior Frontend",
-    text: "За месяц прошёл курс по TypeScript и уже применяю на работе. Формат с живым кодом — лучшее что видел.",
-  },
-  {
-    name: "Диана К.",
-    role: "Студент, 2 курс",
-    text: "Наконец-то платформа где объясняют понятно и не засыпают теорией. Стрики реально мотивируют.",
-  },
-  {
-    name: "Сергей Т.",
-    role: "Backend-разработчик",
-    text: "Использую библиотеку как шпаргалку каждый день. Алгоритмы разобраны лучше чем в большинстве книг.",
-  },
-];
 
 const STEPS = [
   {
@@ -358,40 +341,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── REVIEWS ── */}
-      <section className="relative z-10 px-6 py-16 md:px-10 border-t-2 border-white/[0.06]">
-        <div className="max-w-[900px] mx-auto">
-          <div className="mb-10 flex items-center gap-4">
-            <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/30">// отзывы</div>
-            <div className="flex-1 h-px bg-white/[0.07]" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {REVIEWS.map((r, i) => (
-              <motion.div
-                key={r.name}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="border-2 border-white/[0.07] p-6 bg-[#0F1011] flex flex-col gap-4"
-              >
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <Star key={j} className="size-3 fill-current" style={{ color: G }} />
-                  ))}
-                </div>
-                <p className="font-mono text-[12px] leading-relaxed text-white/55 flex-1">&ldquo;{r.text}&rdquo;</p>
-                <div className="border-t-2 border-white/[0.06] pt-3">
-                  <div className="font-mono text-[11px] font-bold text-white">{r.name}</div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: G + "99" }}>
-                    {r.role}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── FINAL CTA ── */}
       <section className="relative z-10 px-6 py-16 md:px-10 border-t-2 border-white/[0.06]">
