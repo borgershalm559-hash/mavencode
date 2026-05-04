@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import useSWR from "swr";
 import Link from "next/link";
 import { fetcher } from "@/lib/fetcher";
-import { GraduationCap, BookOpen, Flame, ChevronRight, Code2, Trophy, Zap } from "lucide-react";
+import { GraduationCap, BookOpen, ChevronRight, Trophy, Zap, Star } from "lucide-react";
 
 interface PublicStats {
   students: number;
@@ -42,11 +42,44 @@ const FEATURES = [
   },
 ];
 
+const LANGS = [
+  { name: "Python",     color: "#3B82F6" },
+  { name: "JavaScript", color: "#EAB308" },
+  { name: "TypeScript", color: "#60A5FA" },
+  { name: "Go",         color: "#22D3EE" },
+  { name: "SQL",        color: G },
+  { name: "HTML/CSS",   color: "#F97316" },
+  { name: "React",      color: "#38BDF8" },
+  { name: "Docker",     color: "#60A5FA" },
+  { name: "Git",        color: "#F87171" },
+  { name: "Linux",      color: "#A3E635" },
+  { name: "Rust",       color: "#FB923C" },
+  { name: "Алгоритмы",  color: G },
+];
+
+const REVIEWS = [
+  {
+    name: "Алексей М.",
+    role: "Junior Frontend",
+    text: "За месяц прошёл курс по TypeScript и уже применяю на работе. Формат с живым кодом — лучшее что видел.",
+  },
+  {
+    name: "Диана К.",
+    role: "Студент, 2 курс",
+    text: "Наконец-то платформа где объясняют понятно и не засыпают теорией. Стрики реально мотивируют.",
+  },
+  {
+    name: "Сергей Т.",
+    role: "Backend-разработчик",
+    text: "Использую библиотеку как шпаргалку каждый день. Алгоритмы разобраны лучше чем в большинстве книг.",
+  },
+];
+
 const STEPS = [
   {
     n: "01",
     title: "Регистрируйся",
-    desc: "14 дней бесплатно. Без карты. Без обязательств. Просто начни.",
+    desc: "Создай аккаунт за 30 секунд. Без карты. Без обязательств. Просто начни.",
   },
   {
     n: "02",
@@ -169,7 +202,7 @@ export default function LandingPage() {
           </div>
 
           <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white/25">
-            // 14 дней бесплатно · без карты · отмена в один клик
+            // без карты · регистрация за 30 секунд
           </p>
         </motion.div>
 
@@ -218,7 +251,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <StatItem label="студентов" value={stats ? formatNum(stats.students) : "—"} />
             <StatItem label="решено сегодня" value={stats ? formatNum(stats.solvedToday) : "—"} />
-            <StatItem label="дней бесплатно" value="14" accent />
+            <StatItem label="языков и технологий" value="12+" accent />
           </div>
         </div>
       </section>
@@ -293,37 +326,105 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA BLOCK ── */}
+      {/* ── LANGUAGES ── */}
       <section className="relative z-10 px-6 py-16 md:px-10 border-t-2 border-white/[0.06]">
         <div className="max-w-[900px] mx-auto">
+          <div className="mb-10 flex items-center gap-4">
+            <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/30">// что изучаешь</div>
+            <div className="flex-1 h-px bg-white/[0.07]" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {LANGS.map((l, i) => (
+              <motion.div
+                key={l.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.25, delay: i * 0.04 }}
+                className="px-4 py-2 border-2 font-mono text-[11px] font-bold uppercase tracking-[0.15em]"
+                style={{
+                  borderColor: l.color + "44",
+                  color: l.color,
+                  background: l.color + "0d",
+                }}
+              >
+                {l.name}
+              </motion.div>
+            ))}
+          </div>
+          <p className="mt-6 font-mono text-[11px] text-white/30 leading-relaxed">
+            // курсы и материалы по всем популярным языкам и инструментам · база постоянно пополняется
+          </p>
+        </div>
+      </section>
+
+      {/* ── REVIEWS ── */}
+      <section className="relative z-10 px-6 py-16 md:px-10 border-t-2 border-white/[0.06]">
+        <div className="max-w-[900px] mx-auto">
+          <div className="mb-10 flex items-center gap-4">
+            <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/30">// отзывы</div>
+            <div className="flex-1 h-px bg-white/[0.07]" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {REVIEWS.map((r, i) => (
+              <motion.div
+                key={r.name}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="border-2 border-white/[0.07] p-6 bg-[#0F1011] flex flex-col gap-4"
+              >
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Star key={j} className="size-3 fill-current" style={{ color: G }} />
+                  ))}
+                </div>
+                <p className="font-mono text-[12px] leading-relaxed text-white/55 flex-1">&ldquo;{r.text}&rdquo;</p>
+                <div className="border-t-2 border-white/[0.06] pt-3">
+                  <div className="font-mono text-[11px] font-bold text-white">{r.name}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: G + "99" }}>
+                    {r.role}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section className="relative z-10 px-6 py-16 md:px-10 border-t-2 border-white/[0.06]">
+        <div className="max-w-[900px] mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="border-2 p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8"
-            style={{ borderColor: GL, background: GS, boxShadow: `6px 6px 0 0 ${GL}` }}
           >
-            <div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/40 mb-3">
-                // начни сегодня
-              </div>
-              <h2 className="font-mono text-[26px] md:text-[32px] font-black uppercase text-white leading-tight">
-                Первые 14 дней<br />
-                <span style={{ color: G }}>бесплатно.</span>
-              </h2>
-              <p className="mt-2 font-mono text-[12px] text-white/40">
-                // без карты · без обязательств · отмена в один клик
-              </p>
+            <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/30 mb-4">
+              // начни сегодня
             </div>
-            <Link
-              href="/login?tab=register"
-              className="flex-shrink-0 inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-black px-8 py-4 border-2 transition-all"
-              style={{ background: G, borderColor: "#000", color: "#000", boxShadow: "4px 4px 0 0 #000" }}
-            >
-              Создать аккаунт
-              <ChevronRight className="size-4" />
-            </Link>
+            <h2 className="font-mono text-[32px] md:text-[48px] font-black uppercase text-white leading-tight">
+              Стань лучше.<br />
+              <span style={{ color: G }}>Каждый день.</span>
+            </h2>
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/login?tab=register"
+                className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-black px-8 py-4 border-2 transition-all"
+                style={{ background: G, borderColor: G, color: "#000", boxShadow: `4px 4px 0 0 ${GL}` }}
+              >
+                Создать аккаунт
+                <ChevronRight className="size-4" />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-bold px-8 py-4 border-2 border-white/15 text-white/60 hover:border-white/30 hover:text-white transition-all"
+              >
+                Войти
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>
