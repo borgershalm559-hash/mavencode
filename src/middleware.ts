@@ -13,12 +13,12 @@ export default auth((req) => {
   const isAuthed = !!req.auth?.user?.id;
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
 
-  if (isAuthed && pathname === "/") {
+  if (isAuthed && (pathname === "/" || pathname === "/login")) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   if (!isAuthed && isProtected) {
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   if (pathname.startsWith("/admin") && req.auth?.user?.role !== "admin") {
@@ -29,5 +29,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/lesson/:path*", "/admin/:path*", "/pvp/:path*"],
+  matcher: ["/", "/login", "/dashboard/:path*", "/lesson/:path*", "/admin/:path*", "/pvp/:path*"],
 };
