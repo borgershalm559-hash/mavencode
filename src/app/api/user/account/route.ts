@@ -6,8 +6,7 @@ import { prisma } from "@/lib/prisma";
  * DELETE /api/user/account
  *
  * Permanently removes the authenticated user's account and all
- * cascadable related rows (Account, Session, Progress, ActivityLog,
- * PvpRating, PvpSubmission, PvpMatch where the user is player1).
+ * cascadable related rows (Account, Session, Progress, ActivityLog).
  *
  * Body: { confirmEmail: string } — must match the session user's email
  * exactly. This is the second authentication factor required by the

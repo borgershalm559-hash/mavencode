@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export interface RecentActivityItem {
-  kind: "lesson" | "xp" | "achievement" | "pvp" | "course";
+  kind: "lesson" | "xp" | "achievement" | "course";
   title: string;
   sub: string;
   t: string;

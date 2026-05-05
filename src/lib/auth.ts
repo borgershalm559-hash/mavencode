@@ -60,10 +60,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     // Fires when a NEW user is created via OAuth (GitHub, Yandex)
     async createUser({ user }) {
-      await prisma.pvpRating.create({
-        data: { userId: user.id! },
-      }).catch(() => {}); // silently ignore if already exists
-
       // Mark email as verified for OAuth users (provider already verified it).
       // Also record consent: by signing in via OAuth the user agrees to
       // Terms and Privacy (the consent UI is shown on the auth screen).

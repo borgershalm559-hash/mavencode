@@ -10,7 +10,6 @@ import { GraduationCap, BookOpen, ChevronRight, Trophy, Zap } from "lucide-react
 interface PublicStats {
   students: number;
   solvedToday: number;
-  activeMatches: number;
 }
 
 const G  = "#10B981";

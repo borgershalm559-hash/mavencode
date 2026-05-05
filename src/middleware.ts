@@ -6,7 +6,7 @@ import { authConfig } from "@/lib/auth.config";
 // middleware bundle well under Vercel's 1 MB Edge Function limit.
 const { auth } = NextAuth(authConfig);
 
-const PROTECTED_PREFIXES = ["/dashboard", "/lesson", "/admin", "/pvp"];
+const PROTECTED_PREFIXES = ["/dashboard", "/lesson", "/admin"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -29,5 +29,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/", "/login", "/dashboard/:path*", "/lesson/:path*", "/admin/:path*", "/pvp/:path*"],
+  matcher: ["/", "/login", "/dashboard/:path*", "/lesson/:path*", "/admin/:path*"],
 };

@@ -97,27 +97,6 @@ export async function GET() {
     orderBy: { date: "asc" },
   });
 
-  // PvP rating
-  const pvpRating = await prisma.pvpRating.findUnique({
-    where: { userId },
-    select: { rating: true, wins: true, losses: true, streak: true },
-  });
-
-  // PvP submissions (own code submissions)
-  const pvpSubmissions = await prisma.pvpSubmission.findMany({
-    where: { userId },
-    select: {
-      challengeId: true,
-      matchId: true,
-      code: true,
-      score: true,
-      passed: true,
-      timeSpent: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
-
   const payload = {
     exportedAt: new Date().toISOString(),
     schemaVersion: 1,
@@ -135,10 +114,6 @@ export async function GET() {
     })),
     achievements: achievements?.achievements ?? [],
     activity: activityLogs,
-    pvp: {
-      rating: pvpRating,
-      submissions: pvpSubmissions,
-    },
   };
 
   const json = JSON.stringify(payload, null, 2);

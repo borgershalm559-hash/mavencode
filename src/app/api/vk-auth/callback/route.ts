@@ -170,8 +170,6 @@ export async function GET(req: NextRequest) {
         agreedTermsVersion: LEGAL_VERSION,
       },
     });
-    // Create PvpRating for new user (events.createUser equivalent)
-    await prisma.pvpRating.create({ data: { userId: dbUser.id } }).catch(() => {});
   } else {
     // Refresh name and avatar from VK on every login so locale-correct
     // values replace any stale data (e.g. Latin names from earlier sessions).

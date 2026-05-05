@@ -624,7 +624,6 @@ user.items()   # dict_items([("name", "Alice"), ...])
     { title: "UI Master", description: "Прошёл курс Design Systems", icon: "palette" },
     { title: "Sprinter", description: "5 уроков за день", icon: "zap" },
     { title: "Marathon", description: "30 дней подряд", icon: "flame" },
-    { title: "Team", description: "Первая PVP победа", icon: "users" },
   ];
 
   for (const a of achievements) {
@@ -662,9 +661,9 @@ user.items()   # dict_items([("name", "Alice"), ...])
 - **Glassmorphism** карточки с cursor glow эффектом
 - Полностью адаптивная вёрстка для мобильных устройств
 
-### PVP и библиотека
+### Библиотека
 
-Расширены возможности PVP-режима и добавлены новые ресурсы в библиотеку.
+Добавлены новые ресурсы в библиотеку.
 
 > Обновление уже доступно для всех пользователей. Просто обновите страницу!`,
       summary: "Улучшения производительности, новые компоненты UI, обновлённые анимации и оптимизация для мобильных устройств.",
@@ -719,28 +718,6 @@ user.items()   # dict_items([("name", "Alice"), ...])
       imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=500&fit=crop",
       publishedAt: new Date("2026-03-01"),
     },
-    {
-      title: "PVP-сезон март 2026",
-      category: "Событие",
-      body: `## Новый сезон PVP
-
-Начинается новый сезон соревнований! Докажите, что вы лучший кодер на платформе.
-
-### Что вас ждёт
-
-- **Рейтинговые матчи** — решайте задачи быстрее соперника
-- **Таблица лидеров** — следите за своим прогрессом в реальном времени
-- **Эксклюзивные награды** — значки и достижения за топ-10, топ-3, и первое место
-
-### Правила сезона
-
-Матчи проходят каждый день с **18:00 до 22:00 МСК**. Минимальный уровень для участия — 3.
-
-> Участвуйте, чтобы заработать значки и повысить рейтинг!`,
-      summary: "Новый сезон PVP: рейтинговые матчи, таблица лидеров и эксклюзивные награды.",
-      imageUrl: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1200&h=500&fit=crop",
-      publishedAt: new Date("2026-02-28"),
-    },
   ];
 
   for (const n of news) {
@@ -764,77 +741,6 @@ user.items()   # dict_items([("name", "Alice"), ...])
   }
 
   console.log(`✓ ${resources.length} library resources created`);
-
-  // ── PVP Challenges ──
-  const pvpChallenges = [
-    {
-      title: "Сумма двух чисел",
-      description: "Напишите функцию twoSum(nums, target), которая возвращает индексы двух чисел из массива, сумма которых равна target.",
-      starterCode: "function twoSum(nums, target) {\n  // Ваш код здесь\n\n}",
-      tests: JSON.stringify([
-        { input: "JSON.stringify(twoSum([2,7,11,15], 9).sort())", expected: "[0,1]", description: "twoSum([2,7,11,15], 9) → [0,1]" },
-        { input: "JSON.stringify(twoSum([3,2,4], 6).sort())", expected: "[1,2]", description: "twoSum([3,2,4], 6) → [1,2]" },
-      ]),
-      language: "javascript",
-      difficulty: "beginner",
-      timeLimit: 300,
-    },
-    {
-      title: "Палиндром",
-      description: "Напишите функцию isPalindrome(s), которая проверяет, является ли строка палиндромом (игнорируя регистр и не-алфавитные символы).",
-      starterCode: "function isPalindrome(s) {\n  // Ваш код здесь\n\n}",
-      tests: JSON.stringify([
-        { input: "String(isPalindrome('A man, a plan, a canal: Panama'))", expected: "true", description: "isPalindrome('A man...Panama') → true" },
-        { input: "String(isPalindrome('race a car'))", expected: "false", description: "isPalindrome('race a car') → false" },
-      ]),
-      language: "javascript",
-      difficulty: "beginner",
-      timeLimit: 300,
-    },
-    {
-      title: "FizzBuzz",
-      description: "Напишите функцию fizzBuzz(n), которая возвращает массив строк от 1 до n: 'Fizz' для кратных 3, 'Buzz' для кратных 5, 'FizzBuzz' для кратных обоим, иначе число как строку.",
-      starterCode: "function fizzBuzz(n) {\n  // Ваш код здесь\n\n}",
-      tests: JSON.stringify([
-        { input: "JSON.stringify(fizzBuzz(5))", expected: '["1","2","Fizz","4","Buzz"]', description: "fizzBuzz(5)" },
-        { input: "fizzBuzz(15)[14]", expected: "FizzBuzz", description: "fizzBuzz(15)[14] → 'FizzBuzz'" },
-      ]),
-      language: "javascript",
-      difficulty: "beginner",
-      timeLimit: 240,
-    },
-    {
-      title: "Анаграммы",
-      description: "Напишите функцию isAnagram(s, t), которая возвращает true если строки являются анаграммами друг друга.",
-      starterCode: "function isAnagram(s, t) {\n  // Ваш код здесь\n\n}",
-      tests: JSON.stringify([
-        { input: "String(isAnagram('anagram', 'nagaram'))", expected: "true", description: "isAnagram('anagram', 'nagaram') → true" },
-        { input: "String(isAnagram('rat', 'car'))", expected: "false", description: "isAnagram('rat', 'car') → false" },
-      ]),
-      language: "javascript",
-      difficulty: "intermediate",
-      timeLimit: 240,
-    },
-    {
-      title: "Максимальная подпоследовательность",
-      description: "Напишите функцию maxSubArray(nums), которая находит непрерывный подмассив с наибольшей суммой и возвращает эту сумму (алгоритм Кадане).",
-      starterCode: "function maxSubArray(nums) {\n  // Ваш код здесь\n\n}",
-      tests: JSON.stringify([
-        { input: "String(maxSubArray([-2,1,-3,4,-1,2,1,-5,4]))", expected: "6", description: "maxSubArray([-2,1,-3,4,-1,2,1,-5,4]) → 6" },
-        { input: "String(maxSubArray([1]))", expected: "1", description: "maxSubArray([1]) → 1" },
-        { input: "String(maxSubArray([-1]))", expected: "-1", description: "maxSubArray([-1]) → -1" },
-      ]),
-      language: "javascript",
-      difficulty: "intermediate",
-      timeLimit: 360,
-    },
-  ];
-
-  for (const c of pvpChallenges) {
-    await prisma.pvpChallenge.create({ data: c });
-  }
-
-  console.log(`✓ ${pvpChallenges.length} PVP challenges created`);
 
   console.log("\n🌱 Seed complete!");
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { Zap, BookOpen, Trophy, Swords, CheckCircle2 } from "lucide-react";
+import { Zap, BookOpen, Trophy, CheckCircle2 } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
 import type { RecentActivityItem } from "@/app/api/user/recent-activity/route";
 
@@ -9,7 +9,6 @@ const KIND_META: Record<string, { icon: React.ReactNode; color: string }> = {
   xp:          { icon: <Zap className="size-3.5" />,          color: "#10B981" },
   lesson:      { icon: <CheckCircle2 className="size-3.5" />, color: "#3B82F6" },
   achievement: { icon: <Trophy className="size-3.5" />,        color: "#F97316" },
-  pvp:         { icon: <Swords className="size-3.5" />,        color: "#A78BFA" },
   course:      { icon: <BookOpen className="size-3.5" />,      color: "#10B981" },
 };
 

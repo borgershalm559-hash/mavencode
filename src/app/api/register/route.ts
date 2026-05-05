@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name: name || null,
         email,
@@ -71,11 +71,6 @@ export async function POST(req: Request) {
         agreedTermsVersion: LEGAL_VERSION,
         agreedFromIp: ip ?? null,
       },
-    });
-
-    // Auto-create PvpRating for every new user
-    await prisma.pvpRating.create({
-      data: { userId: user.id },
     });
 
     return NextResponse.json({ ok: true }, { status: 201 });

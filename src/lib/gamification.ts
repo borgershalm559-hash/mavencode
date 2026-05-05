@@ -136,15 +136,6 @@ export async function checkAndUnlockAchievements(
         }
         break;
       }
-
-      case "Team": {
-        const pvpWins = await prisma.pvpRating.findUnique({
-          where: { userId },
-          select: { wins: true },
-        });
-        shouldUnlock = (pvpWins?.wins ?? 0) >= 1;
-        break;
-      }
     }
 
     if (shouldUnlock) {

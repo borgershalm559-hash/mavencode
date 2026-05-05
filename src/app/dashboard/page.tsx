@@ -11,7 +11,6 @@ import { CoursesSection } from "@/components/dashboard/courses-section";
 import { CourseDetail } from "@/components/dashboard/course-detail";
 import { NewsSection } from "@/components/dashboard/news-section";
 import { LibrarySection } from "@/components/dashboard/library-section";
-import { PvpSection } from "@/components/dashboard/pvp-section";
 import { SettingsSection } from "@/components/dashboard/settings-section";
 import type { UserProfile, CourseListItem, NewsItem, LibraryItem } from "@/types/dashboard";
 
@@ -153,7 +152,6 @@ export default function DashboardPage() {
                   {active === "courses" && <CoursesSection courses={courses} loading={coursesLoading} onSelectCourse={setSelectedCourse} />}
                   {active === "news" && <NewsSection news={news} loading={newsLoading} selectedNews={null} onSelectNews={setSelectedNews} onBack={() => {}} />}
                   {active === "library" && <LibrarySection library={library} loading={libraryLoading} selectedLibrary={null} onSelectLibrary={setSelectedLibrary} onBack={() => {}} />}
-                  {active === "pvp" && <PvpSection />}
                   {active === "settings" && <SettingsSection />}
                 </motion.div>
               )}
