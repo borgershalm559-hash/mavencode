@@ -163,6 +163,7 @@ export function HeroRunner() {
         <motion.button
           onClick={handleRun}
           disabled={running}
+          whileHover={running ? undefined : { scale: 1.04 }}
           whileTap={{ scale: 0.96 }}
           animate={runControls}
           className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] font-black px-4 py-2 border-2 transition-colors disabled:opacity-50"

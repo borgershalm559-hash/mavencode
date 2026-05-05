@@ -46,12 +46,22 @@ export function HeroDossier() {
 
         <MotionLink
           href="/login?tab=register"
-          whileTap={{ scale: 0.96 }}
+          whileHover="hover"
+          whileTap="tap"
+          variants={{
+            hover: { scale: 1.04, boxShadow: `6px 6px 0 0 ${GL}` },
+            tap: { scale: 0.96 },
+          }}
           className="mt-8 inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-black px-6 py-3.5 border-2 transition-all"
           style={{ background: G, borderColor: G, color: "#000", boxShadow: `4px 4px 0 0 ${GL}` }}
         >
           Начать бесплатно
-          <ChevronRight className="size-4" />
+          <motion.span
+            className="inline-flex"
+            variants={{ hover: { x: 4 }, tap: { x: 0 } }}
+          >
+            <ChevronRight className="size-4" />
+          </motion.span>
         </MotionLink>
       </div>
 

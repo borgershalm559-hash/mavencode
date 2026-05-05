@@ -39,15 +39,26 @@ export function FinalCta() {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <MotionLink
                 href="/login?tab=register"
-                whileTap={{ scale: 0.96 }}
+                whileHover="hover"
+                whileTap="tap"
+                variants={{
+                  hover: { scale: 1.04, boxShadow: `6px 6px 0 0 ${GL}` },
+                  tap: { scale: 0.96 },
+                }}
                 className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-black px-8 py-4 border-2 transition-all"
                 style={{ background: G, borderColor: G, color: "#000", boxShadow: `4px 4px 0 0 ${GL}` }}
               >
                 Создать аккаунт
-                <ChevronRight className="size-4" />
+                <motion.span
+                  className="inline-flex"
+                  variants={{ hover: { x: 4 }, tap: { x: 0 } }}
+                >
+                  <ChevronRight className="size-4" />
+                </motion.span>
               </MotionLink>
               <MotionLink
                 href="/login"
+                whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-bold px-8 py-4 border-2 border-white/15 text-white/60 hover:border-white/30 hover:text-white transition-all"
               >

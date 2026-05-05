@@ -16,14 +16,17 @@ export function LandingNav() {
         </span>
       </a>
       <div className="flex items-center gap-3">
-        <Link
+        <MotionLink
           href="/login"
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
           className="font-mono text-[11px] uppercase tracking-[0.2em] font-bold text-white/60 hover:text-white transition-colors px-4 py-2 border-2 border-white/10 hover:border-white/25"
         >
           Войти
-        </Link>
+        </MotionLink>
         <MotionLink
           href="/login?tab=register"
+          whileHover={{ scale: 1.04, boxShadow: `5px 5px 0 0 ${GL}` }}
           whileTap={{ scale: 0.96 }}
           className="font-mono text-[11px] uppercase tracking-[0.2em] font-bold px-4 py-2 border-2 transition-colors"
           style={{ background: G, borderColor: G, color: "#000", boxShadow: `3px 3px 0 0 ${GL}` }}
