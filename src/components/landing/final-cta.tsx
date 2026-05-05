@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { G, GL, EASE } from "./shared";
 
+const MotionLink = motion.create(Link);
+
 export function FinalCta() {
   return (
     <section className="relative z-10 px-6 py-20 md:px-10 border-t-2 border-white/[0.06]">
@@ -35,20 +37,22 @@ export function FinalCta() {
             </h2>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
+              <MotionLink
                 href="/login?tab=register"
+                whileTap={{ scale: 0.96 }}
                 className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-black px-8 py-4 border-2 transition-all"
                 style={{ background: G, borderColor: G, color: "#000", boxShadow: `4px 4px 0 0 ${GL}` }}
               >
                 Создать аккаунт
                 <ChevronRight className="size-4" />
-              </Link>
-              <Link
+              </MotionLink>
+              <MotionLink
                 href="/login"
+                whileTap={{ scale: 0.96 }}
                 className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-bold px-8 py-4 border-2 border-white/15 text-white/60 hover:border-white/30 hover:text-white transition-all"
               >
                 Войти
-              </Link>
+              </MotionLink>
             </div>
           </div>
         </motion.div>

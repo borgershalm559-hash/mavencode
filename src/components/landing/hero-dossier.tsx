@@ -7,6 +7,8 @@ import { ChevronRight } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
 import { G, GL, EASE, formatNum, type PublicStats } from "./shared";
 
+const MotionLink = motion.create(Link);
+
 export function HeroDossier() {
   const { data: stats } = useSWR<PublicStats>("/api/public/stats", fetcher, {
     refreshInterval: 60000,
@@ -42,14 +44,15 @@ export function HeroDossier() {
           <div>// без воды</div>
         </div>
 
-        <Link
+        <MotionLink
           href="/login?tab=register"
+          whileTap={{ scale: 0.96 }}
           className="mt-8 inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.2em] font-black px-6 py-3.5 border-2 transition-all"
           style={{ background: G, borderColor: G, color: "#000", boxShadow: `4px 4px 0 0 ${GL}` }}
         >
           Начать бесплатно
           <ChevronRight className="size-4" />
-        </Link>
+        </MotionLink>
       </div>
 
       <div className="mt-10 space-y-3">

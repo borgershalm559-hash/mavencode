@@ -35,8 +35,9 @@ export function LanguagesStrip() {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
+              whileHover={{ scale: 1.08, backgroundColor: l.color + "1a" }}
               transition={{ duration: 0.25, delay: i * 0.04 }}
-              className="px-3 py-1.5 border-2 font-mono text-[11px] font-bold uppercase tracking-[0.15em]"
+              className="px-3 py-1.5 border-2 font-mono text-[11px] font-bold uppercase tracking-[0.15em] cursor-default"
               style={{
                 borderColor: l.color + "44",
                 color: l.color,

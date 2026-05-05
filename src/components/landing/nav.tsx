@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { G, GL } from "./shared";
+
+const MotionLink = motion.create(Link);
 
 export function LandingNav() {
   return (
@@ -17,13 +22,14 @@ export function LandingNav() {
         >
           Войти
         </Link>
-        <Link
+        <MotionLink
           href="/login?tab=register"
+          whileTap={{ scale: 0.96 }}
           className="font-mono text-[11px] uppercase tracking-[0.2em] font-bold px-4 py-2 border-2 transition-colors"
           style={{ background: G, borderColor: G, color: "#000", boxShadow: `3px 3px 0 0 ${GL}` }}
         >
           Начать бесплатно
-        </Link>
+        </MotionLink>
       </div>
     </nav>
   );

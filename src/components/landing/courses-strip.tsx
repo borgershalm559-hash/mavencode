@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import useSWR from "swr";
 import { ArrowRight } from "lucide-react";
 import { fetcher } from "@/lib/fetcher";
-import { G, GL, EASE, type PublicCourse } from "./shared";
+import { G, EASE, type PublicCourse } from "./shared";
 
 export function CoursesStrip() {
   const { data: courses } = useSWR<PublicCourse[]>("/api/public/courses", fetcher, {
@@ -50,8 +50,7 @@ function CourseCard({ course, index }: { course: PublicCourse | null; index: num
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.06, ease: EASE }}
-      className="group relative bg-[#0F1011] border-2 border-white/[0.07] hover:border-white/20 transition-all"
-      style={{ boxShadow: `4px 4px 0 0 ${GL}` }}
+      className="group relative bg-[#0F1011] border-2 border-white/[0.07] hover:border-white/20 shadow-[4px_4px_0_0_rgba(16,185,129,0.28)] hover:shadow-[6px_6px_0_0_rgba(16,185,129,0.45)] hover:-translate-y-1 transition-all duration-200"
     >
       {/* color stripe */}
       <div className="h-1.5" style={{ background: accent }} />

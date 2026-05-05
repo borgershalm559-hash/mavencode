@@ -61,6 +61,7 @@ export function HowItWorks() {
               initial={{ opacity: 0, y: 14, scale: 0.98 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
+              whileHover={{ y: -4, scale: 1.015 }}
               transition={{ duration: 0.45, delay: i * 0.08, ease: EASE }}
               className={`relative bg-[#0F1011] border-2 border-white/[0.07] flex flex-col ${s.minH} ${s.shadow}`}
             >

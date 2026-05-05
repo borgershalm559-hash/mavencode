@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { Play, Loader2 } from "lucide-react";
 import { JsRunner } from "@/components/lesson/runners/js-runner";
 import { PythonRunner, onPyodideLoadingStatus, type PyodideLoadingStatus } from "@/components/lesson/runners/python-runner";
@@ -52,6 +52,7 @@ export function HeroRunner() {
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [pyStatus, setPyStatus] = useState<PyodideLoadingStatus | null>(null);
+  const runControls = useAnimation();
 
   // Subscribe once for Pyodide loading banner.
   useEffect(() => {
@@ -75,6 +76,10 @@ export function HeroRunner() {
   }, []);
 
   async function handleRun() {
+    runControls.start({
+      boxShadow: [`3px 3px 0 0 ${GL}`, `0 0 24px ${G}`, `3px 3px 0 0 ${GL}`],
+      transition: { duration: 0.45 },
+    });
     setRunning(true);
     setOutput(null);
     setError(null);
@@ -122,20 +127,30 @@ export function HeroRunner() {
 
       {/* Tabs */}
       <div className="flex border-b-2 border-white/[0.07]">
-        {(["python", "javascript", "html"] as Lang[]).map((l) => (
-          <button
-            key={l}
-            onClick={() => { setLang(l); setOutput(null); setError(null); }}
-            className="flex-1 py-2 font-mono text-[10px] uppercase tracking-[0.2em] font-bold transition-colors"
-            style={{
-              background: lang === l ? "rgba(16,185,129,0.08)" : "transparent",
-              color: lang === l ? G : "rgba(255,255,255,0.4)",
-              borderBottom: lang === l ? `2px solid ${G}` : "2px solid transparent",
-            }}
-          >
-            {l}
-          </button>
-        ))}
+        {(["python", "javascript", "html"] as Lang[]).map((l) => {
+          const active = lang === l;
+          return (
+            <button
+              key={l}
+              onClick={() => { setLang(l); setOutput(null); setError(null); }}
+              className={`relative flex-1 py-2 font-mono text-[10px] uppercase tracking-[0.2em] font-bold transition-colors ${
+                active
+                  ? "bg-[rgba(16,185,129,0.08)] text-[#10B981]"
+                  : "text-white/40 hover:bg-[rgba(16,185,129,0.04)] hover:text-white/60"
+              }`}
+            >
+              {l}
+              {active && (
+                <motion.div
+                  layoutId="hero-tab-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-0.5"
+                  style={{ background: G }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Code body */}
@@ -145,15 +160,17 @@ export function HeroRunner() {
 
       {/* Run + output */}
       <div className="px-5 pb-5 pt-2 border-t-2 border-white/[0.07] space-y-3">
-        <button
+        <motion.button
           onClick={handleRun}
           disabled={running}
-          className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] font-black px-4 py-2 border-2 transition-all disabled:opacity-50"
+          whileTap={{ scale: 0.96 }}
+          animate={runControls}
+          className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] font-black px-4 py-2 border-2 transition-colors disabled:opacity-50"
           style={{ background: G, borderColor: G, color: "#000", boxShadow: `3px 3px 0 0 ${GL}` }}
         >
           {running ? <Loader2 className="size-3 animate-spin" /> : <Play className="size-3" />}
           Запустить
-        </button>
+        </motion.button>
 
         {pyStatus === "loading" && lang === "python" && (
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
