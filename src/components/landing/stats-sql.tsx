@@ -58,16 +58,22 @@ function SqlRow({ sql, value, start, delay }: { sql: string; value: string; star
 
   useEffect(() => {
     if (!start) return;
+    let interval: ReturnType<typeof setInterval> | null = null;
     const t = setTimeout(() => {
       let i = 0;
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         i++;
         setTyped(sql.slice(0, i));
-        if (i >= sql.length) clearInterval(interval);
+        if (i >= sql.length && interval !== null) {
+          clearInterval(interval);
+          interval = null;
+        }
       }, 30);
-      return () => clearInterval(interval);
     }, delay);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      if (interval !== null) clearInterval(interval);
+    };
   }, [start, delay, sql]);
 
   const done = typed === sql;
