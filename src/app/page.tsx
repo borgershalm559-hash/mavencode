@@ -23,10 +23,7 @@ function GridBg() {
 
 export default function LandingPage() {
   return (
-    <div
-      className="relative min-h-screen overflow-x-hidden font-sans antialiased selection:bg-[#10B981] selection:text-black"
-      style={{ background: "#0A0A0B", color: "#fff" }}
-    >
+    <div className="relative min-h-screen overflow-x-hidden font-sans antialiased selection:bg-[#10B981] selection:text-black bg-[#0A0A0B] text-white">
       <GridBg />
 
       <LandingNav />
