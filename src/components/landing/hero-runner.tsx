@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Loader2 } from "lucide-react";
 import { JsRunner } from "@/components/lesson/runners/js-runner";
@@ -54,9 +54,25 @@ export function HeroRunner() {
   const [pyStatus, setPyStatus] = useState<PyodideLoadingStatus | null>(null);
 
   // Subscribe once for Pyodide loading banner.
-  if (typeof window !== "undefined") {
+  useEffect(() => {
     onPyodideLoadingStatus(setPyStatus);
-  }
+    return () => {
+      // Module-singleton subscription — overwrite with no-op so stale setter is never called.
+      onPyodideLoadingStatus(() => {});
+    };
+  }, []);
+
+  const pyRunnerRef = useRef<PythonRunner | null>(null);
+  const jsRunnerRef = useRef<JsRunner | null>(null);
+  const htmlRunnerRef = useRef<HtmlRunner | null>(null);
+
+  useEffect(() => {
+    return () => {
+      pyRunnerRef.current?.destroy();
+      jsRunnerRef.current?.destroy();
+      htmlRunnerRef.current?.destroy();
+    };
+  }, []);
 
   async function handleRun() {
     setRunning(true);
@@ -66,17 +82,14 @@ export function HeroRunner() {
       const snippet = SNIPPETS[lang].code;
       let result;
       if (lang === "python") {
-        const r = new PythonRunner();
-        result = await r.run(snippet, []);
-        r.destroy();
+        pyRunnerRef.current ??= new PythonRunner();
+        result = await pyRunnerRef.current.run(snippet, []);
       } else if (lang === "javascript") {
-        const r = new JsRunner();
-        result = await r.run(snippet, []);
-        r.destroy();
+        jsRunnerRef.current ??= new JsRunner();
+        result = await jsRunnerRef.current.run(snippet, []);
       } else {
-        const r = new HtmlRunner();
-        result = await r.run(snippet, []);
-        r.destroy();
+        htmlRunnerRef.current ??= new HtmlRunner();
+        result = await htmlRunnerRef.current.run(snippet, []);
       }
       setOutput(result.output || "✓ выполнено без вывода");
       setError(result.error);
