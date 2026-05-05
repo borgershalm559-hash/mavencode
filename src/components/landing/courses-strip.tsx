@@ -40,7 +40,9 @@ export function CoursesStrip() {
 
 function CourseCard({ course, index }: { course: PublicCourse | null; index: number }) {
   const c = course;
-  const accent = c?.color ?? G;
+  const HEX6 = /^#[0-9a-fA-F]{6}$/;
+  const rawColor = c?.color ?? G;
+  const accent = HEX6.test(rawColor) ? rawColor : G;
 
   return (
     <motion.div
@@ -65,6 +67,7 @@ function CourseCard({ course, index }: { course: PublicCourse | null; index: num
           <>
             <div className="flex items-center justify-between">
               <span
+                aria-hidden="true"
                 className="size-9 grid place-items-center font-mono text-[12px] font-black border-2"
                 style={{ color: accent, borderColor: accent + "55", background: accent + "0d" }}
               >
