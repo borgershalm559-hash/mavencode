@@ -1,6 +1,5 @@
 // Color tokens used across all landing components — keep in sync with /login.
 export const G = "#10B981";
-export const GS = "rgba(16,185,129,0.09)";
 export const GL = "rgba(16,185,129,0.28)";
 
 // Standard motion ease used throughout the dashboard and /login.

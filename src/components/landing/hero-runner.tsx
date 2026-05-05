@@ -161,6 +161,12 @@ export function HeroRunner() {
           </div>
         )}
 
+        {pyStatus === "error" && lang === "python" && (
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-red-400/70">
+            // python недоступен — попробуйте JS или HTML
+          </div>
+        )}
+
         {output && (
           <div className="font-mono text-[11px] text-white/70 whitespace-pre-wrap">{output}</div>
         )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { G, GL, EASE } from "./shared";
+import { G, EASE } from "./shared";
 
 interface Step {
   filename: string;
@@ -15,7 +15,7 @@ const STEPS: Step[] = [
   {
     filename: "STEP_01.md",
     title: "Регистрация → 30 секунд",
-    shadow: `3px 3px 0 0 ${GL}`,
+    shadow: "shadow-[2px_2px_0_0_rgba(16,185,129,0.28)] lg:shadow-[3px_3px_0_0_rgba(16,185,129,0.28)]",
     minH: "min-h-[260px]",
     body: (
       <div className="font-mono text-[11px] text-white/60 space-y-1">
@@ -30,14 +30,14 @@ const STEPS: Step[] = [
   {
     filename: "STEP_02.md",
     title: "Решай задачи",
-    shadow: `5px 5px 0 0 ${GL}`,
+    shadow: "shadow-[2px_2px_0_0_rgba(16,185,129,0.28)] lg:shadow-[5px_5px_0_0_rgba(16,185,129,0.28)]",
     minH: "min-h-[320px]",
     body: <EditorMock />,
   },
   {
     filename: "STEP_03.md",
     title: "Растёшь каждый день",
-    shadow: `4px 4px 0 0 ${GL}`,
+    shadow: "shadow-[2px_2px_0_0_rgba(16,185,129,0.28)] lg:shadow-[4px_4px_0_0_rgba(16,185,129,0.28)]",
     minH: "min-h-[290px]",
     body: <StreakMock />,
   },
@@ -62,8 +62,7 @@ export function HowItWorks() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: i * 0.08, ease: EASE }}
-              className={`relative bg-[#0F1011] border-2 border-white/[0.07] flex flex-col ${s.minH}`}
-              style={{ boxShadow: s.shadow }}
+              className={`relative bg-[#0F1011] border-2 border-white/[0.07] flex flex-col ${s.minH} ${s.shadow}`}
             >
               <div className="px-5 py-2 border-b-2 border-white/[0.07] flex items-center justify-between">
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
