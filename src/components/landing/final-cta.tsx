@@ -14,8 +14,7 @@ export function FinalCta() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="bg-[#0F1011] border-2 border-white/[0.07]"
-          style={{ boxShadow: `8px 8px 0 0 rgba(16,185,129,0.55)` }}
+          className="bg-[#0F1011] border-2 border-white/[0.07] shadow-[4px_4px_0_0_rgba(16,185,129,0.55)] lg:shadow-[8px_8px_0_0_rgba(16,185,129,0.55)]"
         >
           <div className="flex items-center gap-2 px-4 py-2.5 border-b-2 border-white/[0.07]">
             <div className="size-2.5 rounded-full bg-red-500/70" />
