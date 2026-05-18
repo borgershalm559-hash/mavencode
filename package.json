@@ -14,6 +14,8 @@
     "seed:html-102-news": "npx tsx prisma/seed-html-102-news.ts",
     "seed:css-101": "npx tsx prisma/seed-css-101.ts",
     "seed:css-101-news": "npx tsx prisma/seed-css-101-news.ts",
+    "seed:achievements": "npx tsx prisma/seed-achievements.ts",
+    "backfill:achievements": "npx tsx scripts/backfill-achievements.ts",
     "reset:news": "npx tsx prisma/reset-news.ts"
   },
   "dependencies": {
