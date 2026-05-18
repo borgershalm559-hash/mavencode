@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MavenCode — Landing Wireframe</title>
+<style>
+  :root {
+    --bg:        #f7f7f7;
+    --surface:   #fff;
+    --line:      #d8d8d8;
+    --line-soft: #ececec;
+    --block:     #e0e0e0;
+    --block-2:   #cfcfcf;
+    --text:      #2a2a2a;
+    --muted:     #8a8a8a;
+    --accent:    #444;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, "Courier New", monospace; }
+  a { color: inherit; text-decoration: none; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .label { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+  .divider { flex: 1; height: 1px; background: var(--line); }
+  .row { display: flex; align-items: center; gap: 12px; }
+
+  /* ── Nav ── */
+  .nav {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; }
+  .logo-mark { width: 18px; height: 14px; background: var(--block-2); border: 1px solid var(--line); }
+  .nav-cta { display: flex; gap: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 32px; padding: 0 14px;
+    border: 1px solid var(--line); background: var(--surface);
+    font-family: inherit; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; font-weight: 700;
+    color: var(--text);
+  }
+  .btn-primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 64px 0 32px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    margin: 0; font-size: 56px; line-height: .98; letter-spacing: -0.01em;
+    font-weight: 900; text-transform: uppercase;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero p {
+    max-width: 460px; margin: 22px auto 0;
+    font-size: 12px; line-height: 1.6; color: var(--muted);
+  }
+  .hero-cta { display: inline-flex; gap: 10px; margin-top: 28px; }
+  .hero-cta .btn { height: 42px; padding: 0 22px; font-size: 11px; }
+  .hero-foot { margin-top: 12px; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+
+  /* ── Terminal mock ── */
+  .terminal-wrap { padding: 16px 0 48px; display: flex; justify-content: center; }
+  .terminal {
+    width: 100%; max-width: 520px;
+    background: var(--surface); border: 1px solid var(--line);
+  }
+  .terminal-head {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-bottom: 1px solid var(--line-soft);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--block-2); }
+  .terminal-name { margin-left: 6px; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .terminal-body { padding: 18px 16px; }
+  .line { height: 9px; background: var(--block); margin: 6px 0; }
+  .line.short { width: 35%; }
+  .line.medium { width: 60%; }
+  .line.long { width: 85%; }
+
+  /* ── Section ── */
+  section { padding: 36px 0; border-top: 1px solid var(--line-soft); }
+  .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+
+  /* ── Stats ── */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stat {
+    border: 1px solid var(--line); background: var(--surface);
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .stat .stat-label { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+  .stat .stat-value { height: 24px; background: var(--block); width: 40%; }
+
+  /* ── Features (3 cards) ── */
+  .cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .card {
+    border: 1px solid var(--line); background: var(--surface);
+    padding: 18px; min-height: 150px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .card-icon { width: 26px; height: 26px; background: var(--block-2); margin-bottom: 4px; }
+  .card .line { margin: 4px 0; }
+
+  /* ── Steps (3 numbered) ── */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .step .step-no {
+    font-size: 30px; font-weight: 900; color: var(--block-2);
+    line-height: 1; margin-bottom: 10px;
+  }
+  .step .step-title {
+    height: 10px; background: var(--block); width: 60%; margin-bottom: 10px;
+  }
+
+  /* ── Languages (chips) ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface);
+    padding: 6px 12px; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted);
+  }
+  .chip-note { margin-top: 18px; font-size: 10px; color: var(--muted); }
+
+  /* ── Final CTA ── */
+  .final {
+    text-align: center; padding: 56px 0;
+  }
+  .final h2 {
+    margin: 0; font-size: 44px; line-height: 1.05; letter-spacing: -0.01em;
+    font-weight: 900; text-transform: uppercase;
+  }
+  .final h2 .accent { color: var(--accent); }
+  .final .label { margin-bottom: 12px; }
+  .final-cta { display: inline-flex; gap: 10px; margin-top: 26px; }
+  .final-cta .btn { height: 44px; padding: 0 24px; font-size: 11px; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .footer-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0;
+    font-size: 10px; color: var(--muted); letter-spacing: .15em; text-transform: uppercase;
+  }
+  .footer-links { display: flex; gap: 14px; }
+
+  /* ── Mobile ── */
+  @media (max-width: 720px) {
+    .hero h1 { font-size: 38px; }
+    .final h2 { font-size: 32px; }
+    .stats, .cards-3, .steps { grid-template-columns: 1fr; }
+    .hero-cta, .final-cta { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Nav ───────────────────────────────────────────────────────────── -->
+<div class="nav">
+  <div class="page nav-inner">
+    <div class="logo">
+      <div class="logo-mark"></div>
+      mavencode
+    </div>
+    <div class="nav-cta">
+      <span class="btn">Войти</span>
+      <span class="btn btn-primary">Начать бесплатно</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── Hero ────────────────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="pill">// платформа для программистов</div>
+    <h1>Учись.<br>Практикуй.<br><span class="accent">Доминируй.</span></h1>
+    <p>Интерактивные курсы по программированию, библиотека знаний и система прогресса. Пиши реальный код с первого урока.</p>
+    <div class="hero-cta">
+      <span class="btn btn-primary">Начать бесплатно</span>
+      <span class="btn">Уже есть аккаунт</span>
+    </div>
+    <div class="hero-foot">// без карты · регистрация за 30 секунд</div>
+  </header>
+
+  <!-- ── Terminal mock ──────────────────────────────────────────────── -->
+  <div class="terminal-wrap">
+    <div class="terminal">
+      <div class="terminal-head">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <span class="terminal-name">lesson_01.py</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line short"></div>
+        <div class="line long"></div>
+        <div style="display:inline-block; padding:4px 10px; border:1px solid var(--line); margin-top:10px;
+                    font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted);">
+          ✓ тесты пройдены · +50 xp
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stats ──────────────────────────────────────────────────────── -->
+  <section>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">студентов</div>
+        <div class="stat-value"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">решено сегодня</div>
+        <div class="stat-value"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">языков и технологий</div>
+        <div class="stat-value"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ────────────────────────────────────────────────────── -->
+  <section>
+    <div class="section-head">
+      <div class="label">// возможности</div>
+      <div class="divider"></div>
+    </div>
+    <div class="cards-3">
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="line short"></div>
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line long"></div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="line short"></div>
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line long"></div>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <div class="line short"></div>
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line long"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ───────────────────────────────────────────────── -->
+  <section>
+    <div class="section-head">
+      <div class="label">// как это работает</div>
+      <div class="divider"></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-no">01</div>
+        <div class="step-title"></div>
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line long"></div>
+      </div>
+      <div class="step">
+        <div class="step-no">02</div>
+        <div class="step-title"></div>
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line long"></div>
+      </div>
+      <div class="step">
+        <div class="step-no">03</div>
+        <div class="step-title"></div>
+        <div class="line long"></div>
+        <div class="line medium"></div>
+        <div class="line long"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Languages ──────────────────────────────────────────────────── -->
+  <section>
+    <div class="section-head">
+      <div class="label">// что изучаешь</div>
+      <div class="divider"></div>
+    </div>
+    <div class="chips">
+      <span class="chip">Python</span>
+      <span class="chip">JavaScript</span>
+      <span class="chip">TypeScript</span>
+      <span class="chip">Go</span>
+      <span class="chip">SQL</span>
+      <span class="chip">HTML/CSS</span>
+      <span class="chip">React</span>
+      <span class="chip">Docker</span>
+      <span class="chip">Git</span>
+      <span class="chip">Linux</span>
+      <span class="chip">Rust</span>
+      <span class="chip">Алгоритмы</span>
+    </div>
+    <div class="chip-note">// 12 технологий и растёт · база постоянно пополняется</div>
+  </section>
+
+  <!-- ── Final CTA ──────────────────────────────────────────────────── -->
+  <section class="final">
+    <div class="label">// начни сегодня</div>
+    <h2>Стань лучше.<br><span class="accent">Каждый день.</span></h2>
+    <div class="final-cta">
+      <span class="btn btn-primary">Создать аккаунт</span>
+      <span class="btn">Войти</span>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── Footer ──────────────────────────────────────────────────────── -->
+<footer>
+  <div class="page footer-inner">
+    <div class="row">
+      <div class="logo-mark"></div>
+      <span>mavencode · 2026</span>
+    </div>
+    <div class="footer-links">
+      <span>Условия</span>
+      <span>Конфиденциальность</span>
+      <span>Войти</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
