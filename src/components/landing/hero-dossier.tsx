@@ -66,9 +66,9 @@ export function HeroDossier() {
       </div>
 
       <div className="mt-10 space-y-3">
-        <StatRow label="students"     value={stats ? formatNum(stats.students) : "—"} />
-        <StatRow label="solved today" value={stats ? formatNum(stats.solvedToday) : "—"} />
-        <StatRow label="courses"      value={stats ? formatNum(stats.coursesCount) : "—"} />
+        <StatRow label="учеников"       value={stats ? formatNum(stats.students) : "—"} />
+        <StatRow label="решено сегодня" value={stats ? formatNum(stats.solvedToday) : "—"} />
+        <StatRow label="курсов"         value={stats ? formatNum(stats.coursesCount) : "—"} />
       </div>
 
       <div
