@@ -1,5 +1,16 @@
 import type { NextConfig } from "next";
 
+// Optional S3 object storage (Timeweb S3 / any S3-compatible) for user uploads.
+// When configured, its public host must be allowed for <img> (CSP) and for
+// next/image remote loading.
+let s3Host = "";
+try {
+  s3Host = process.env.S3_PUBLIC_URL ? new URL(process.env.S3_PUBLIC_URL).host : "";
+} catch {
+  s3Host = "";
+}
+const s3ImgSrc = s3Host ? ` https://${s3Host}` : "";
+
 const securityHeaders = [
   {
     key: "Strict-Transport-Security",
@@ -24,7 +35,8 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       // *.userapi.com already covers sun9-*.userapi.com; CSP wildcards
       // must be full-subdomain (`*.host`), partial (`sun9-*`) is invalid.
-      "img-src 'self' data: blob: https://avatars.githubusercontent.com https://avatars.yandex.net https://*.userapi.com https://*.vk.com",
+      // Trailing s3ImgSrc is the configured Timeweb S3 host (or empty).
+      "img-src 'self' data: blob: https://avatars.githubusercontent.com https://avatars.yandex.net https://*.userapi.com https://*.vk.com" + s3ImgSrc,
       "font-src 'self' data:",
       "connect-src 'self' https://cdn.jsdelivr.net https://id.vk.com https://*.userapi.com",
       "worker-src 'self' blob:",
@@ -45,6 +57,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "avatars.yandex.net" },
       { protocol: "https", hostname: "*.userapi.com" },
       { protocol: "https", hostname: "*.vk.com" },
+      ...(s3Host ? [{ protocol: "https" as const, hostname: s3Host }] : []),
     ],
   },
   async headers() {

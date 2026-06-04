@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
-import { mkdir, writeFile, access } from "node:fs/promises";
-import path from "node:path";
 import { getAdminUserId } from "@/lib/api-auth";
+import { saveImage } from "@/lib/storage";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -39,15 +38,6 @@ function detectImageFormat(bytes: Uint8Array): ImageFormat | null {
   return null;
 }
 
-async function pathExists(p: string): Promise<boolean> {
-  try {
-    await access(p);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function POST(req: Request): Promise<NextResponse> {
   const [, error] = await getAdminUserId();
   if (error) return error;
@@ -77,23 +67,17 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Unsupported image format" }, { status: 415 });
   }
 
+  // Content-addressed key: identical bytes resolve to the same object.
   const hash = createHash("sha256").update(buf).digest("hex");
   const now = new Date();
   const yyyy = String(now.getUTCFullYear());
   const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const dir = path.join(process.cwd(), "public", "uploads", yyyy, mm);
-  const filename = `${hash}.${fmt.ext}`;
-  const fullPath = path.join(dir, filename);
-  const publicUrl = `/uploads/${yyyy}/${mm}/${filename}`;
+  const key = `uploads/${yyyy}/${mm}/${hash}.${fmt.ext}`;
 
-  await mkdir(dir, { recursive: true });
-
-  if (!(await pathExists(fullPath))) {
-    await writeFile(fullPath, buf);
-  }
+  const { url } = await saveImage(key, buf, fmt.mime);
 
   return NextResponse.json({
-    url: publicUrl,
+    url,
     size: file.size,
     contentType: fmt.mime,
   });

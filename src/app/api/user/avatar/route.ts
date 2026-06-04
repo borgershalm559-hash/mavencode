@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { getAuthUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
+import { saveImage } from "@/lib/storage";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -67,12 +66,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const filename = `${userId}.${EXT[kind]}`;
-    const uploadDir = path.join(process.cwd(), "public", "avatars");
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(path.join(uploadDir, filename), buffer);
+    // Stable per-user key so the avatar overwrites the previous one.
+    const key = `avatars/${userId}.${EXT[kind]}`;
+    const { url } = await saveImage(key, buffer, `image/${kind}`);
 
-    const imageUrl = `/avatars/${filename}?t=${Date.now()}`;
+    // Cache-bust so the browser/CDN picks up the new bytes at the same key.
+    const imageUrl = `${url}?t=${Date.now()}`;
 
     await prisma.user.update({
       where: { id: userId },
